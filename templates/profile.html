@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+
+{% block title %}Профиль{% endblock %}
+
+{% block content %}
+    <div class="profile-page">
+        <div class="form">
+            <p><img src="{{ user.avatar.url }}" alt="Аватар" class="round"></p>
+            <h1>{{ user.username }}</h1>
+            <p>Адрес электронной почты: {{ user.email }}</p>
+            <p>О себе: {{ user.bio }}</p>
+        </div>
+        <!-- Лента постов -->
+        <section class="feed">
+            <div class="post">
+
+            </div>
+        </section>
+    </div>
+{% endblock %}

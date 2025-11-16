@@ -1,0 +1,39 @@
+
+{% extends 'base.html' %}
+
+{% block title %}Редактирование профиля{% endblock %}
+
+{% block content %}
+    <div class="profile-page">
+        <h2>Редактирование профиля</h2>
+        <div class="register-form">
+            <form class="edit-form" enctype="multipart/form-data" method="post">
+                {% csrf_token %}
+                <p><img src="{{ user.avatar.url }}" alt="Аватар" class="round"></p>
+                <div class="profile_message">
+                    {{ form.avatar.as_widget }}
+                </div>
+
+                <input type="text" placeholder="Имя пользователя" id={{ form.username }}
+                {% if form.username.errors  %}
+                    {% for error in form.username.errors %}
+                        <div class="alert alert-danger with-close alert-dismissible fade show">
+                            {{error}}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+
+                <input type="email" placeholder="Адрес электронной почты" id={{ form.email }}
+                {% if form.email.errors %}
+                    {% for error in form.email.errors %}
+                        <div class="alert alert-danger with-close alert-dismissible fade show">
+                            {{error}}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+                <input type="text" placeholder="О себе" id={{ form.bio }}
+                <button type="submit">Сохранить</button>
+            </form>
+        </div>
+    </div>
+{% endblock %}

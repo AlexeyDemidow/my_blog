@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+
+{% block content %}
+{#    {% if user.is_authenticated %}#}
+
+        {% for post in posts %}
+            <div class="post">
+
+                <p><img src="{{ post.author.avatar.url }}" alt="Аватар" class="round"></p>
+                <h3>{{ post.author.username }}</h3>
+                <p>{{ post.content }}</p>
+                <small>{{ post.created_at }}</small>
+
+                <!-- Картинки -->
+                {% for img in post.images.all %}
+                    <img src="{{ img.image.url }}" style="max-width:200px; border-radius:10px; margin-top:10px;">
+                {% endfor %}
+
+                <!-- Лайки -->
+                <p>👍 {{ post.likes.count }}</p>
+
+                <!-- Комментарии -->
+                <strong>Комментарии:</strong>
+                {% for comment in post.comments.all %}
+                    <p>{{ comment.user.username }}: {{ comment.text }}</p>
+                {% endfor %}
+
+            </div>
+        {% empty %}
+            <p>У вас пока нет постов.</p>
+        {% endfor %}
+
+{#    {% else %}#}
+{#        <p>Пожалуйста, войдите в аккаунт.</p>#}
+{#    {% endif %}#}
+{% endblock %}

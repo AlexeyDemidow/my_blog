@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+
+{% block title %}Настройки{% endblock %}
+
+{% block content %}
+    <div class="settings-page">
+        <div class="form">
+            <a href="{% url 'update_profile' user.id %}"><input class="button" type="submit" value="Редактировать профиль" style="background: #8d96a1;"></a>
+            <a href="{% url 'password_reset' %}"><input class="button" type="submit" value="Изменить пароль" style="background: #8d96a1;"></a>
+            <form action="{% url 'logout' %}" method="post" style="display:inline;">
+                {% csrf_token %}
+                <button type="submit" class="nav-btn">Выйти</button>
+            </form>
+        </div>
+    </div>
+{% endblock %}
