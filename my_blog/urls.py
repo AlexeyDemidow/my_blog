@@ -26,6 +26,7 @@ from posts.views import PostList
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', PostList.as_view(), name='home'),  # Главная
+    path('posts/', include('posts.urls')),
     path('users/', include('users.urls')),
     path('users/', include('django.contrib.auth.urls')),
 
