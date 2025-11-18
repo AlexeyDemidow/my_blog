@@ -16,11 +16,20 @@
                 {% endfor %}
 
                 <!-- Лайки -->
-                <p class="like"><span id="like-actual-{{ post.id }}">{{ post.likes.count }}</span></p>
                 {% if user.is_authenticated %}
-                <button class="like-btn" data-post-id="{{ post.id }}">Like</button>
+                    {% if post.is_liked %}
+                        <button class="like-btn" data-post-id="{{ post.id }}">
+                            <i class="fa-solid fa-heart" style="color:red;"></i>
+                        </button>
+                    {% else %}
+                        <button class="like-btn" data-post-id="{{ post.id }}">
+                            <i class="fa-regular fa-heart"></i>
+                        </button>
+                    {% endif %}
                 {% endif %}
+                <span id="like-actual-{{ post.id }}">{{ post.likes.count }}</span>
                 <!-- Комментарии -->
+            <br>
                 <strong>Комментарии:</strong>
                 {% for comment in post.comments.all %}
                     <p>{{ comment.user.username }}: {{ comment.text }}</p>
@@ -30,8 +39,4 @@
         {% empty %}
             <p>У вас пока нет постов.</p>
         {% endfor %}
-
-{#    {% else %}#}
-{#        <p>Пожалуйста, войдите в аккаунт.</p>#}
-{#    {% endif %}#}
 {% endblock %}

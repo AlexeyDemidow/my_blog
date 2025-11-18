@@ -13,28 +13,28 @@ class PostList(ListView):
     template_name = 'home.html'
 
     def get_queryset(self):
-        return Post.objects.all()
+        posts = Post.objects.all()
+
+        if self.request.user.is_authenticated:  # Проверка на наличие лайка
+            for post in posts:
+                post.is_liked = post.likes.filter(user=self.request.user).exists()
+
+        return posts
 
 
 @login_required
-def like_post(request, pk):
-    """Представление для AJAX-запроса добавления товара в корзину и увеличения количества в корзине"""
+def like_unlike_post(request, pk):
     post = get_object_or_404(Post, id=pk)
+
     like, created = Like.objects.get_or_create(user=request.user, post=post)
+    if not created:
+        like.delete()
+        is_liked = False
+    else:
+        is_liked = True
 
-    # if like:
-    #     like.save()
-
-    return JsonResponse({'status': 'success'})
-
-
-# @login_required
-# def unlike_post(request, pk):
-#     """Представление для AJAX-запроса добавления товара в корзину и увеличения количества в корзине"""
-#     post = get_object_or_404(Post, id=pk)
-#     like, created = Like.objects.get_or_create(user=request.user, post=post)
-#
-#     if like:
-#         like.delete()
-#
-#     return JsonResponse({'status': 'success'})
+    return JsonResponse({
+        'status': 'success',
+        'is_liked': is_liked,
+        'like_count': post.likes.count()
+    })
