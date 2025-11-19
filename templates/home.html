@@ -26,14 +26,27 @@
                             <i class="fa-regular fa-heart"></i>
                         </button>
                     {% endif %}
+
                 {% endif %}
                 <span id="like-actual-{{ post.id }}">{{ post.likes.count }}</span>
                 <!-- Комментарии -->
             <br>
                 <strong>Комментарии:</strong>
-                {% for comment in post.comments.all %}
-                    <p>{{ comment.user.username }}: {{ comment.text }}</p>
-                {% endfor %}
+                {% if user.is_authenticated %}
+                    <textarea id="comment-text-{{ post.id }}" rows="2"></textarea>
+                    <button class="comment-btn" data-post-id="{{ post.id }}">Отправить</button>
+                {% endif %}
+                    {% for comment in post.comments.all reversed %}
+                        <ul id="comments-list-{{ post.id }}">
+                            <li id="comment-{{ post.id }}">
+                                <strong>{{ comment.user.username }}</strong>:
+                                <span class="comment-text">{{ comment.text }}</span>
+                                <small class="text-muted"> {{ comment.created_at }} </small>
+                            </li>
+                        </ul>
+
+                    {% endfor %}
+
 
             </div>
         {% empty %}
