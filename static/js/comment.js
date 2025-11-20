@@ -51,7 +51,8 @@ $(document).ready(function() {
                         <li id="comment-${c.id}">
                             <strong>${escapeHtml(c.user)}</strong>:
                             <span class="comment-text">${escapeHtml(c.text)}</span>
-                            <small class="text-muted"> ${escapeHtml(c.created_at)} </small>
+                            <small class="text-muted">${escapeHtml(c.created_at)}</small>
+                            <button class="del-comment-btn" data-comment-id="${c.id}">${escapeHtml('Удалить')}</button>
                         </li>
                     `;
 

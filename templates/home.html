@@ -38,10 +38,13 @@
                 {% endif %}
                     {% for comment in post.comments.all reversed %}
                         <ul id="comments-list-{{ post.id }}">
-                            <li id="comment-{{ post.id }}">
+                            <li id="comment-{{ comment.id }}">
                                 <strong>{{ comment.user.username }}</strong>:
                                 <span class="comment-text">{{ comment.text }}</span>
                                 <small class="text-muted"> {{ comment.created_at }} </small>
+                                {% if user.is_authenticated and user == comment.user %}
+                                    <button class="del-comment-btn" data-comment-id="{{ comment.id }}">Удалить</button>
+                                {% endif %}
                             </li>
                         </ul>
 

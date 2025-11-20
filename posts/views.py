@@ -66,6 +66,21 @@ def add_comment(request, pk):
             'text': comment.text,
             'user': request.user.username,
             'created_at': django_date(comment.created_at, "d E Y г. H:i"),
+            'is_owner': comment.user == request.user,
         }
     })
 
+@require_POST
+@login_required
+def del_comment(request, pk):
+    comment = Comment.objects.filter(
+        id=pk,
+        user=request.user
+    ).first()
+
+    if not comment:
+        return JsonResponse({'status': 'error', 'message': 'not found or forbidden'}, status=403)
+
+    comment.delete()
+
+    return JsonResponse({'status': 'success'})
