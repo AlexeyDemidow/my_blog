@@ -1,0 +1,30 @@
+
+{% extends 'base.html' %}
+
+{% block title %}Создание поста{% endblock %}
+
+{% block content %}
+    <div class="post-creation-page">
+        <h3>Создание поста</h3>
+        <div class="form">
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+
+                <div>
+                    {{ form.as_p }}
+                </div>
+
+                <h3>Изображения</h3>
+                {{ images_formset.management_form }}
+
+                {% for form in images_formset %}
+                    <div>
+                        {{ form.as_p }}
+                    </div>
+                {% endfor %}
+
+                <button type="submit">Создать пост</button>
+            </form>
+        </div>
+    </div>
+{% endblock %}

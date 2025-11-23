@@ -2,12 +2,14 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import JsonResponse, HttpResponseBadRequest
 from django.shortcuts import render, get_object_or_404
+from django.urls import reverse_lazy
 from django.utils import timezone
 from django.views.decorators.http import require_POST
-from django.views.generic import ListView
+from django.views.generic import ListView, CreateView
 from django.template.defaultfilters import date as django_date
 
-from posts.models import Post, Like, Comment
+from posts.forms import PostCreationForm, PostImageFormSet
+from posts.models import Post, Like, Comment, PostImage
 
 
 class PostList(ListView):
@@ -23,6 +25,53 @@ class PostList(ListView):
                 post.is_liked = post.likes.filter(user=self.request.user).exists()
 
         return posts
+
+
+class PostCreate(LoginRequiredMixin, CreateView):
+    model = Post
+    form_class = PostCreationForm
+    template_name = 'create_post.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        if self.request.POST:
+            context['images_formset'] = PostImageFormSet(self.request.POST, self.request.FILES)
+        else:
+            context['images_formset'] = PostImageFormSet()
+        return context
+
+    def form_valid(self, form):
+        context = self.get_context_data()
+        images_formset = context['images_formset']
+
+        # Создаем пост
+        post = form.save(commit=False)
+        post.author = self.request.user
+        post.save()
+
+        # Сохраняем изображения
+        if images_formset.is_valid():
+            for image_form in images_formset:
+                if image_form.cleaned_data.get('image'):
+                    PostImage.objects.create(post=post, image=image_form.cleaned_data['image'])
+        return super().form_valid(form)
+
+    def get_success_url(self):
+        pk = self.request.user.pk
+        return reverse_lazy('profile', kwargs={'pk': pk})
+
+
+@require_POST
+@login_required
+def post_delete(request, pk):
+    # post = Post.objects.filter(id=pk).first()
+    post = get_object_or_404(Post, id=pk)
+    if not post:
+        return JsonResponse({'status': 'error', 'message': 'not found or forbidden'}, status=403)
+
+    post.delete()
+
+    return JsonResponse({'status': 'success'})
 
 
 @login_required

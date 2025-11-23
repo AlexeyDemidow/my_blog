@@ -47,6 +47,10 @@ class Profile(LoginRequiredMixin, DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+
+        user = self.get_object()
+        context['posts'] = user.post_set.all()
+
         return context
 
 class ProfileSettings(TemplateView):

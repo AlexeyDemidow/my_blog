@@ -36,8 +36,9 @@
                     <textarea id="comment-text-{{ post.id }}" rows="2"></textarea>
                     <button class="comment-btn" data-post-id="{{ post.id }}">Отправить</button>
                 {% endif %}
-                    {% for comment in post.comments.all reversed %}
-                        <ul id="comments-list-{{ post.id }}">
+                <div id="comment-list-{{ post.id }}">
+                    <ul id="comments-list-{{ post.id }}">
+                        {% for comment in post.comments.all reversed %}
                             <li id="comment-{{ comment.id }}">
                                 <strong>{{ comment.user.username }}</strong>:
                                 <span class="comment-text">{{ comment.text }}</span>
@@ -46,9 +47,11 @@
                                     <button class="del-comment-btn" data-comment-id="{{ comment.id }}">Удалить</button>
                                 {% endif %}
                             </li>
-                        </ul>
+                        {% endfor %}
+                    </ul>
+                </div>
 
-                    {% endfor %}
+
 
 
             </div>

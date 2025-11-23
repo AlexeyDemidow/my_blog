@@ -10,11 +10,62 @@
             <p>Адрес электронной почты: {{ user.email }}</p>
             <p>О себе: {{ user.bio }}</p>
         </div>
+        <a href="{% url 'post_create'%}" class="nav-btn">Создать пост</a>
+
         <!-- Лента постов -->
         <section class="feed">
             <div class="post">
+                {% for post in posts %}
+                <div class="post" id="post-item-{{ post.id }}">
 
-            </div>
+                    <p><img src="{{ post.author.avatar.url }}" alt="Аватар" class="round"></p>
+                    <h3>{{ post.author.username }}</h3>
+                    <p>{{ post.content }}</p>
+                    <small>{{ post.created_at }}</small>
+
+                    <!-- Картинки -->
+                    {% for img in post.images.all %}
+                        <img src="{{ img.image.url }}" style="max-width:200px; border-radius:10px; margin-top:10px;">
+                    {% endfor %}
+
+                    <!-- Лайки -->
+                    {% if user.is_authenticated %}
+                        {% if post.is_liked %}
+                            <button class="like-btn" data-post-id="{{ post.id }}">
+                                <i class="fa-solid fa-heart" style="color:red;"></i>
+                            </button>
+                        {% else %}
+                            <button class="like-btn" data-post-id="{{ post.id }}">
+                                <i class="fa-regular fa-heart"></i>
+                            </button>
+                        {% endif %}
+
+                    {% endif %}
+                    <span id="like-actual-{{ post.id }}">{{ post.likes.count }}</span>
+                    <!-- Комментарии -->
+                    {% if user.is_authenticated %}
+                        <button class="del-post-btn" data-post-id="{{ post.id }}">Удалить пост</button>
+                    {% endif %}
+                <br>
+                    <strong>Комментарии:</strong>
+                    {% if user.is_authenticated %}
+                        <textarea id="comment-text-{{ post.id }}" rows="2"></textarea>
+                        <button class="comment-btn" data-post-id="{{ post.id }}">Отправить</button>
+                    {% endif %}
+                        {% for comment in post.comments.all reversed %}
+                            <ul id="comments-list-{{ post.id }}">
+                                <li id="comment-{{ comment.id }}">
+                                    <strong>{{ comment.user.username }}</strong>:
+                                    <span class="comment-text">{{ comment.text }}</span>
+                                    <small class="text-muted"> {{ comment.created_at }} </small>
+                                    {% if user.is_authenticated and user == comment.user %}
+                                        <button class="del-comment-btn" data-comment-id="{{ comment.id }}">Удалить</button>
+                                    {% endif %}
+                                </li>
+                            </ul>
+                        {% endfor %}
+                    {% endfor %}
+                </div>
         </section>
     </div>
 {% endblock %}
