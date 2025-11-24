@@ -43,6 +43,20 @@
                                 <strong>{{ comment.user.username }}</strong>:
                                 <span class="comment-text">{{ comment.text }}</span>
                                 <small class="text-muted"> {{ comment.created_at }} </small>
+
+                                {% if user.is_authenticated %}
+                                    {% if comment.is_liked %}
+                                        <button class="comment-like-btn" data-comment-id="{{ comment.id }}">
+                                            <i class="fa-solid fa-heart" style="color:red;"></i>
+                                        </button>
+                                    {% else %}
+                                        <button class="comment-like-btn" data-comment-id="{{ comment.id }}">
+                                            <i class="fa-regular fa-heart"></i>
+                                        </button>
+                                    {% endif %}
+                                {% endif %}
+                                <span id="actual-comment-like-{{ comment.id }}">{{ comment.comment_likes.count }}</span>
+
                                 {% if user.is_authenticated and user == comment.user %}
                                     <button class="del-comment-btn" data-comment-id="{{ comment.id }}">Удалить</button>
                                 {% endif %}

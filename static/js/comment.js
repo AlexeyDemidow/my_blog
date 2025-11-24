@@ -52,6 +52,11 @@ $(document).ready(function() {
                             <strong>${escapeHtml(c.user)}</strong>:
                             <span class="comment-text">${escapeHtml(c.text)}</span>
                             <small class="text-muted">${escapeHtml(c.created_at)}</small>
+                           
+                            <button class="comment-like-btn" data-comment-id="${c.id}">
+                                <i class="fa-regular fa-heart"></i>
+                            </button>
+                            <span id="actual-comment-like-${c.id}">${c.like_count}</span>
                             <button class="del-comment-btn" data-comment-id="${c.id}">${escapeHtml('Удалить')}</button>
                         </li>
                     `;

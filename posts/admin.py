@@ -1,7 +1,7 @@
 from django.contrib import admin
 
 from django.contrib import admin
-from .models import Post, PostImage, Like, Comment
+from .models import Post, PostImage, PostLike, Comment, CommentLike
 
 
 # -----------------------------
@@ -51,11 +51,18 @@ class PostAdmin(admin.ModelAdmin):
 # -----------------------------
 #   Likes в админке
 # -----------------------------
-@admin.register(Like)
+@admin.register(PostLike)
 class LikeAdmin(admin.ModelAdmin):
     list_display = ('id', 'post', 'user', 'created_at')
     list_filter = ('created_at', 'user')
     search_fields = ('user__username', 'post__content')
+
+
+@admin.register(CommentLike)
+class LikeAdmin(admin.ModelAdmin):
+    list_display = ('id', 'comment', 'user', 'created_at')
+    list_filter = ('created_at', 'user')
+    search_fields = ('user__username', 'comment__text')
 
 
 # -----------------------------

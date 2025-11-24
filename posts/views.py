@@ -7,9 +7,11 @@ from django.utils import timezone
 from django.views.decorators.http import require_POST
 from django.views.generic import ListView, CreateView
 from django.template.defaultfilters import date as django_date
+from django.db.models import Exists, OuterRef, Prefetch
+
 
 from posts.forms import PostCreationForm, PostImageFormSet
-from posts.models import Post, Like, Comment, PostImage
+from posts.models import Post, PostLike, Comment, PostImage, CommentLike
 
 
 class PostList(ListView):
@@ -20,9 +22,28 @@ class PostList(ListView):
     def get_queryset(self):
         posts = Post.objects.all()
 
-        if self.request.user.is_authenticated:  # Проверка на наличие лайка
-            for post in posts:
-                post.is_liked = post.likes.filter(user=self.request.user).exists()
+        if self.request.user.is_authenticated:
+            # Аннотируем посты: есть ли лайк текущего пользователя
+            posts = posts.annotate(
+                is_liked=Exists(
+                    PostLike.objects.filter(user=self.request.user, post=OuterRef('pk'))
+                )
+            )
+
+            # Предзагружаем комментарии и аннотируем их поле is_liked
+            posts = posts.prefetch_related(
+                Prefetch(
+                    'comments',
+                    queryset=Comment.objects.all().annotate(
+                        is_liked=Exists(
+                            CommentLike.objects.filter(user=self.request.user, comment=OuterRef('pk'))
+                        )
+                    )
+                )
+            )
+        else:
+            # Анонимному пользователю просто предзагружаем комментарии
+            posts = posts.prefetch_related('comments')
 
         return posts
 
@@ -78,7 +99,7 @@ def post_delete(request, pk):
 def like_unlike_post(request, pk):
     post = get_object_or_404(Post, id=pk)
 
-    like, created = Like.objects.get_or_create(user=request.user, post=post)
+    like, created = PostLike.objects.get_or_create(user=request.user, post=post)
     if not created:
         like.delete()
         is_liked = False
@@ -89,6 +110,24 @@ def like_unlike_post(request, pk):
         'status': 'success',
         'is_liked': is_liked,
         'like_count': post.likes.count()
+    })
+
+
+@login_required
+def like_unlike_comment(request, pk):
+    comment = get_object_or_404(Comment, id=pk)
+
+    comment_like, created = CommentLike.objects.get_or_create(user=request.user, comment=comment)
+    if not created:
+        comment_like.delete()
+        is_liked = False
+    else:
+        is_liked = True
+
+    return JsonResponse({
+        'status': 'success',
+        'is_liked': is_liked,
+        'like_count': comment.comment_likes.count()
     })
 
 
@@ -107,7 +146,7 @@ def add_comment(request, pk):
         text=text,
         created_at=timezone.now()
     )
-
+    print(comment.comment_likes.exists())
     return JsonResponse({
         'status': 'success',
         'comment': {
@@ -116,6 +155,8 @@ def add_comment(request, pk):
             'user': request.user.username,
             'created_at': django_date(comment.created_at, "d E Y г. H:i"),
             'is_owner': comment.user == request.user,
+            'like_count': comment.comment_likes.count(),
+            'is_liked': comment.comment_likes.exists()
         }
     })
 
