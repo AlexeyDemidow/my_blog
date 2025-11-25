@@ -8,6 +8,17 @@ class Post(models.Model):
     content = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
 
+    # Если это репост — здесь ссылка на оригинал
+    original_post = models.ForeignKey(
+        'self',
+        on_delete=models.CASCADE,
+        null=True, blank=True,
+        related_name='reposts'
+    )
+
+    def is_repost(self):
+        return self.original_post is not None
+
 class PostImage(models.Model):
     post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='images')
     image = models.ImageField(upload_to='post_images/')

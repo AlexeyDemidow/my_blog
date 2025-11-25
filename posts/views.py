@@ -1,5 +1,6 @@
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.forms import modelformset_factory, inlineformset_factory
 from django.http import JsonResponse, HttpResponseBadRequest
 from django.shortcuts import render, get_object_or_404
 from django.urls import reverse_lazy
@@ -55,31 +56,30 @@ class PostCreate(LoginRequiredMixin, CreateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        ImageFormSet = inlineformset_factory(Post, PostImage, fields=('image',), extra=50, can_delete_extra=True)
         if self.request.POST:
-            context['images_formset'] = PostImageFormSet(self.request.POST, self.request.FILES)
+            context['images_formset'] = ImageFormSet(self.request.POST, self.request.FILES)
         else:
-            context['images_formset'] = PostImageFormSet()
+            context['images_formset'] = ImageFormSet()
         return context
 
     def form_valid(self, form):
         context = self.get_context_data()
         images_formset = context['images_formset']
 
-        # Создаем пост
-        post = form.save(commit=False)
-        post.author = self.request.user
-        post.save()
+        # Присваиваем автора
+        form.instance.author = self.request.user
 
-        # Сохраняем изображения
-        if images_formset.is_valid():
-            for image_form in images_formset:
-                if image_form.cleaned_data.get('image'):
-                    PostImage.objects.create(post=post, image=image_form.cleaned_data['image'])
-        return super().form_valid(form)
+        if form.is_valid() and images_formset.is_valid():
+            self.object = form.save()  # Сохраняем пост
+            images_formset.instance = self.object
+            images_formset.save()  # Сохраняем изображения
+            return super().form_valid(form)
+        else:
+            return self.form_invalid(form)
 
     def get_success_url(self):
-        pk = self.request.user.pk
-        return reverse_lazy('profile', kwargs={'pk': pk})
+        return reverse_lazy('profile', kwargs={'pk': self.request.user.pk})
 
 
 @require_POST
@@ -111,6 +111,34 @@ def like_unlike_post(request, pk):
         'is_liked': is_liked,
         'like_count': post.likes.count()
     })
+
+
+@login_required
+def repost(request, pk):
+    original = get_object_or_404(Post, id=pk)
+
+    # Проверяем, не репостил ли уже пользователь этот пост
+    existing = Post.objects.filter(
+        author=request.user,
+        original_post=original
+    ).first()
+
+    if existing:
+        return JsonResponse({
+            'status': 'error',
+            'message': 'Вы уже репостили этот пост'
+        })
+
+    new_post = Post.objects.create(
+        author=request.user,
+        original_post=original
+    )
+
+    return JsonResponse({
+        'status': 'success',
+        'post_id': new_post.id
+    })
+
 
 
 @login_required
