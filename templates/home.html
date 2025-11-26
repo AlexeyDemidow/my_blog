@@ -3,7 +3,7 @@
 {% block content %}
 
 {% for post in posts reversed %}
-    <div class="post" id="post-item-{{ post.id }}">
+    <div class="post open-post" data-post-id="{{ post.id }}" id="post-item-{{ post.id }}">
 
         {% if post.original_post %}
             <!-- 🔁 Репост -->
@@ -37,8 +37,8 @@
                 <img src="{{ img.image.url }}" style="max-width:200px; border-radius:10px; margin-top:10px;">
             {% endfor %}
         {% endif %}
-
-        <!-- Лайки -->
+    </div>
+    <!-- Лайки -->
         {% if user.is_authenticated %}
             {% if post.is_liked %}
                 <button class="like-btn" data-post-id="{{ post.id }}">
@@ -79,15 +79,13 @@
                         <small class="text-muted"> {{ comment.created_at }} </small>
 
                         {% if user.is_authenticated %}
+                            <button class="comment-like-btn" data-comment-id="{{ comment.id }}">
                             {% if comment.is_liked %}
-                                <button class="comment-like-btn" data-comment-id="{{ comment.id }}">
-                                    <i class="fa-solid fa-heart" style="color:red;"></i>
-                                </button>
+                                <i class="fa-solid fa-heart" style="color:red;"></i>
                             {% else %}
-                                <button class="comment-like-btn" data-comment-id="{{ comment.id }}">
-                                    <i class="fa-regular fa-heart"></i>
-                                </button>
+                                <i class="fa-regular fa-heart"></i>
                             {% endif %}
+                            </button>
                         {% endif %}
 
                         <span id="actual-comment-like-{{ comment.id }}">
@@ -102,8 +100,6 @@
 
             </ul>
         </div>
-
-    </div>
 {% empty %}
     <p>У вас пока нет постов.</p>
 {% endfor %}

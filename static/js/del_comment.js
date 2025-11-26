@@ -1,4 +1,4 @@
-$(document).on('click', '.del-comment-btn', function(event) {
+$(document).on('click', '.del-comment-btn, .modal-del-comment-btn', function(event) {
     event.preventDefault();
     const commentId = $(this).data('comment-id');
     const csrf = getCookie('csrftoken');
@@ -12,6 +12,7 @@ $(document).on('click', '.del-comment-btn', function(event) {
             if (data.status === 'success') {
                 // Удаляем комментарий без перезагрузки
                 $(`#comment-${commentId}`).remove();
+                $(`#modal-comment-${commentId}`).remove();
             } else {
                 alert('Ошибка удаления комментария');
             }

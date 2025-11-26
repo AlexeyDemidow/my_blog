@@ -82,10 +82,19 @@ class PostCreate(LoginRequiredMixin, CreateView):
         return reverse_lazy('profile', kwargs={'pk': self.request.user.pk})
 
 
+def post_detail(request, pk):
+    post = get_object_or_404(Post, id=pk)
+    comments = post.comments.all().order_by('-created_at')
+    return render(request, 'partials/post_modal.html', {
+        'post': post,
+        'comments': comments,
+    })
+
+
+
 @require_POST
 @login_required
 def post_delete(request, pk):
-    # post = Post.objects.filter(id=pk).first()
     post = get_object_or_404(Post, id=pk)
     if not post:
         return JsonResponse({'status': 'error', 'message': 'not found or forbidden'}, status=403)
