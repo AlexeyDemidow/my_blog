@@ -1,4 +1,4 @@
-$(document).on('click', '.comment-btn, .modal-comment-btn', function(event) {
+$(document).on('click', '.modal-comment-btn', function(event) {
 
         // функция для получения CSRF из cookie (если вы не вставляете токен в HTML)
     function getCookie(name) {
@@ -15,15 +15,15 @@ $(document).on('click', '.comment-btn, .modal-comment-btn', function(event) {
     const postId = btn.data('post-id');
 
     // Находим элемент textarea по postId
-    const textarea = $('#comment-text-' + postId);
+    // const textarea = $('#comment-text-' + postId);
     const modaltextarea = $('#modal-comment-text-' + postId)
 
-    if (!textarea.length) {
+    if (!modaltextarea.length) {
         console.error('Textarea not found for post', postId);
         return;
     }
 
-    const text = textarea.val().trim() || modaltextarea.val().trim(); // !! ВАЖНО: .val(), а не сам объект
+    const text = modaltextarea.val().trim(); // !! ВАЖНО: .val(), а не сам объект
     if (!text) {
         alert('Комментарий пустой');
         return;
@@ -63,11 +63,14 @@ $(document).on('click', '.comment-btn, .modal-comment-btn', function(event) {
                 `;
 
                 // Добавляем комментарий в начало/конец списка
-                $('#comments-list-' + postId).prepend(commentHtml);
+                // $('#comments-list-' + postId).prepend(commentHtml);
                 $('#modal-comments-list-' + postId).prepend(commentHtml);
 
+                $('#comment-count').text(data.comment_count);
+                $('#modal-comment-count').text(data.comment_count);
+
                 // Очищаем поле ввода
-                textarea.val('');
+                // textarea.val('');
                 modaltextarea.val('');
             } else {
                 console.error('Unexpected response', data);

@@ -46,7 +46,7 @@
 
     <!-- Счетчик комментариев -->
     <i class="fa-regular fa-comment"></i>
-    {{ post.comments.count }}
+    <span id="modal-comment-count">{{ post.comments.count }}</span>
 
     <!-- Репосты -->
     {% if user.is_authenticated %}

@@ -214,7 +214,6 @@ def add_comment(request, pk):
         text=text,
         created_at=timezone.now()
     )
-    print(comment.comment_likes.exists())
     return JsonResponse({
         'status': 'success',
         'comment': {
@@ -225,7 +224,9 @@ def add_comment(request, pk):
             'is_owner': comment.user == request.user,
             'like_count': comment.comment_likes.count(),
             'is_liked': comment.comment_likes.exists()
-        }
+        },
+        'comment_count': post.comments.count(),
+
     })
 
 @require_POST
