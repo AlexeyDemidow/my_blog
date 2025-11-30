@@ -25,19 +25,18 @@
                         {% endfor %}
                     </div>
                 {% endwith %}
-        </div>
 
-        {% else %}
-            <!-- Обычный пост -->
-            <p><img src="{{ post.author.avatar.url }}" alt="Аватар" class="round"></p>
-            <h3>{{ post.author.username }}</h3>
-            <p>{{ post.content }}</p>
-            <small>{{ post.created_at }}</small>
+            {% else %}
+                <!-- Обычный пост -->
+                <p><img src="{{ post.author.avatar.url }}" alt="Аватар" class="round"></p>
+                <h3>{{ post.author.username }}</h3>
+                <p>{{ post.content }}</p>
+                <small>{{ post.created_at }}</small>
 
-            {% for img in post.images.all %}
-                <img src="{{ img.image.url }}" style="max-width:200px; border-radius:10px; margin-top:10px;">
-            {% endfor %}
-        {% endif %}
+                {% for img in post.images.all %}
+                    <img src="{{ img.image.url }}" style="max-width:200px; border-radius:10px; margin-top:10px;">
+                {% endfor %}
+            {% endif %}
         </div>
     <!-- Лайки -->
         {% if user.is_authenticated %}

@@ -12,6 +12,17 @@ $(document).on('click', '.del-post-btn', function(event) {
             if (data.status === 'success') {
                 // Удаляем комментарий без перезагрузки
                 $(`#post-item-${postId}`).remove();
+
+                if (data.original_post_id) {
+                    let origId = data.original_post_id;
+
+                    let counter = $('#repost-count-' + origId);
+                    let modalcounter = $('#modal-repost-count-' + origId);
+
+                    counter.text(parseInt(counter.text()) - 1);
+                    modalcounter.text(parseInt(modalcounter.text()) - 1);
+                }
+
             } else {
                 alert('Ошибка удаления поста');
             }

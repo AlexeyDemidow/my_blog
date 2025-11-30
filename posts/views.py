@@ -95,13 +95,19 @@ def post_detail(request, pk):
 @require_POST
 @login_required
 def post_delete(request, pk):
-    post = get_object_or_404(Post, id=pk)
-    if not post:
-        return JsonResponse({'status': 'error', 'message': 'not found or forbidden'}, status=403)
+    post = get_object_or_404(Post, id=pk, author=request.user)
+
+    # Проверяем, является ли пост репостом
+    original_post_id = None
+    if post.original_post:
+        original_post_id = post.original_post.id
 
     post.delete()
 
-    return JsonResponse({'status': 'success'})
+    return JsonResponse({
+        'status': 'success',
+        'original_post_id': original_post_id
+    })
 
 
 @login_required
