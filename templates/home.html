@@ -1,6 +1,7 @@
 {% extends 'base.html' %}
 
 {% block content %}
+<a href="{% url 'post_create' %}" class="nav-btn">Создать пост</a>
 <div class="sort-container" style="margin-bottom:15px;">
     <select id="sort-selector">
         <option value="date-new">По дате (сначала новые)</option>
