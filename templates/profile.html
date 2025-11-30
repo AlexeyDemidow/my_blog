@@ -19,96 +19,97 @@
     <section class="feed">
 
         {% for post in posts reversed %}
-        <div class="post" id="post-item-{{ post.id }}">
+            <div class="post" id="post-item-{{ post.id }}">
 
-            {# ████████ 1. ЕСЛИ ЭТО РЕПОСТ ████████ #}
-            {% if post.original_post %}
-                <p><strong>{{ post.author.username }}</strong> сделал репост:</p>
+                {# ████████ 1. ЕСЛИ ЭТО РЕПОСТ ████████ #}
+                <div class="post open-post" data-post-id="{{ post.id }}" id="post-item-{{ post.id }}">
+                    {% if post.original_post %}
+                        <p><strong>{{ post.author.username }}</strong> сделал репост:</p>
 
-                <div class="repost-box">
-                    <p><img src="{{ post.original_post.author.avatar.url }}" class="round"></p>
-                    <h3>{{ post.original_post.author.username }}</h3>
-                    <p>{{ post.original_post.content }}</p>
-                    <small>{{ post.original_post.created_at }}</small>
+                        <div class="repost-box">
+                            <p><img src="{{ post.original_post.author.avatar.url }}" class="round"></p>
+                            <h3>{{ post.original_post.author.username }}</h3>
+                            <p>{{ post.original_post.content }}</p>
+                            <small>{{ post.original_post.created_at }}</small>
 
-                    {% for img in post.original_post.images.all %}
-                        <img src="{{ img.image.url }}" style="max-width:200px; border-radius:10px; margin-top:10px;">
-                    {% endfor %}
+                            {% for img in post.original_post.images.all %}
+                                <img src="{{ img.image.url }}" style="max-width:200px; border-radius:10px; margin-top:10px;">
+                            {% endfor %}
+                        </div>
+
+                    {# ████████ 2. ЕСЛИ ЭТО Обычный пост ████████ #}
+                    {% else %}
+                        <p><img src="{{ post.author.avatar.url }}" alt="Аватар" class="round"></p>
+                        <h3>{{ post.author.username }}</h3>
+                        <p>{{ post.content }}</p>
+                        <small>{{ post.created_at }}</small>
+
+                        {% for img in post.images.all %}
+                            <img src="{{ img.image.url }}" style="max-width:200px; border-radius:10px; margin-top:10px;">
+                        {% endfor %}
+                    {% endif %}
                 </div>
 
-            {# ████████ 2. ЕСЛИ ЭТО Обычный пост ████████ #}
-            {% else %}
-                <p><img src="{{ post.author.avatar.url }}" alt="Аватар" class="round"></p>
-                <h3>{{ post.author.username }}</h3>
-                <p>{{ post.content }}</p>
-                <small>{{ post.created_at }}</small>
-
-                {% for img in post.images.all %}
-                    <img src="{{ img.image.url }}" style="max-width:200px; border-radius:10px; margin-top:10px;">
-                {% endfor %}
-            {% endif %}
-
-            {# ████████ 3. Кнопки лайков и репостов ████████ #}
-            {% if user.is_authenticated %}
-                {% if post.is_liked %}
-                    <button class="like-btn" data-post-id="{{ post.id }}">
-                        <i class="fa-solid fa-heart" style="color:red;"></i>
-                    </button>
-                {% else %}
-                    <button class="like-btn" data-post-id="{{ post.id }}">
-                        <i class="fa-regular fa-heart"></i>
-                    </button>
+                {# ████████ 3. Кнопки лайков и репостов ████████ #}
+                {% if user.is_authenticated %}
+                    {% if post.is_liked %}
+                        <button class="like-btn" data-post-id="{{ post.id }}">
+                            <i class="fa-solid fa-heart" style="color:red;"></i>
+                        </button>
+                    {% else %}
+                        <button class="like-btn" data-post-id="{{ post.id }}">
+                            <i class="fa-regular fa-heart"></i>
+                        </button>
+                    {% endif %}
                 {% endif %}
-            {% endif %}
-            <span id="like-actual-{{ post.id }}">{{ post.likes.count }}</span>
+                <span id="like-actual-{{ post.id }}">{{ post.likes.count }}</span>
 
-            {% if user.is_authenticated %}
-                <button class="repost-btn" data-post-id="{{ post.id }}">🔁 Репост</button>
-            {% endif %}
-            <span id="repost-count-{{ post.id }}">{{ post.reposts.count }}</span>
+                {% if user.is_authenticated %}
+                    <button class="repost-btn" data-post-id="{{ post.id }}">🔁 Репост</button>
+                {% endif %}
+                <span id="repost-count-{{ post.id }}">{{ post.reposts.count }}</span>
 
-            {% if user.is_authenticated and user == post.author %}
-                <button class="del-post-btn" data-post-id="{{ post.id }}">Удалить пост</button>
-            {% endif %}
+                {% if user.is_authenticated and user == post.author %}
+                    <button class="del-post-btn" data-post-id="{{ post.id }}">Удалить пост</button>
+                {% endif %}
 
-            <hr>
+                <hr>
 
-            {# ████████ 4. Комментарии ████████ #}
-            <strong>Комментарии:</strong>
+                {# ████████ 4. Комментарии ████████ #}
+                <strong>Комментарии:</strong>
 
-            {% if user.is_authenticated %}
-                <textarea id="comment-text-{{ post.id }}" rows="2"></textarea>
-                <button class="comment-btn" data-post-id="{{ post.id }}">Отправить</button>
-            {% endif %}
+                {% if user.is_authenticated %}
+                    <textarea id="comment-text-{{ post.id }}" rows="2"></textarea>
+                    <button class="comment-btn" data-post-id="{{ post.id }}">Отправить</button>
+                {% endif %}
 
-            <ul id="comments-list-{{ post.id }}">
-                {% for comment in post.comments.all reversed %}
-                <li id="comment-{{ comment.id }}">
-                    <strong>{{ comment.user.username }}</strong>:
-                    <span class="comment-text">{{ comment.text }}</span>
-                    <small class="text-muted">{{ comment.created_at }}</small>
+                <ul id="comments-list-{{ post.id }}">
+                    {% for comment in post.comments.all reversed %}
+                    <li id="comment-{{ comment.id }}">
+                        <strong>{{ comment.user.username }}</strong>:
+                        <span class="comment-text">{{ comment.text }}</span>
+                        <small class="text-muted">{{ comment.created_at }}</small>
 
-                    {% if user.is_authenticated %}
-                        {% if comment.is_liked %}
-                            <button class="comment-like-btn" data-comment-id="{{ comment.id }}">
-                                <i class="fa-solid fa-heart" style="color:red;"></i>
-                            </button>
-                        {% else %}
-                            <button class="comment-like-btn" data-comment-id="{{ comment.id }}">
-                                <i class="fa-regular fa-heart"></i>
-                            </button>
+                        {% if user.is_authenticated %}
+                            {% if comment.is_liked %}
+                                <button class="comment-like-btn" data-comment-id="{{ comment.id }}">
+                                    <i class="fa-solid fa-heart" style="color:red;"></i>
+                                </button>
+                            {% else %}
+                                <button class="comment-like-btn" data-comment-id="{{ comment.id }}">
+                                    <i class="fa-regular fa-heart"></i>
+                                </button>
+                            {% endif %}
                         {% endif %}
-                    {% endif %}
-                    <span id="actual-comment-like-{{ comment.id }}">{{ comment.comment_likes.count }}</span>
+                        <span id="actual-comment-like-{{ comment.id }}">{{ comment.comment_likes.count }}</span>
 
-                    {% if user.is_authenticated and user == comment.user %}
-                        <button class="del-comment-btn" data-comment-id="{{ comment.id }}">Удалить</button>
-                    {% endif %}
-                </li>
-                {% endfor %}
-            </ul>
-
-        </div>
+                        {% if user.is_authenticated and user == comment.user %}
+                            <button class="del-comment-btn" data-comment-id="{{ comment.id }}">Удалить</button>
+                        {% endif %}
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
         {% empty %}
             <p>У вас пока нет постов.</p>
         {% endfor %}
