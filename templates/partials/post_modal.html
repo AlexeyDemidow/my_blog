@@ -44,10 +44,14 @@
     </button>
     <span id="modal-like-count">{{ post.likes.count }}</span>
 
+    <!-- Счетчик комментариев -->
+    <i class="fa-regular fa-comment"></i>
+    {{ post.comments.count }}
+
     <!-- Репосты -->
     {% if user.is_authenticated %}
         <button class="modal-repost-btn" data-post-id="{{ post.id }}">
-            🔁 Репост
+            <i class="fa-solid fa-retweet"></i>
         </button>
     {% endif %}
     <span id="modal-repost-count-{{ post.id }}">{{ post.reposts.count }}</span>

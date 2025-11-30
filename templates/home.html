@@ -60,17 +60,22 @@
                 {% endif %}
             {% endif %}
             <span id="like-actual-{{ post.id }}">{{ post.likes.count }}</span>
+            <!-- Счетчик комментариев -->
+            <i class="fa-regular fa-comment"></i>
+            {{ post.comments.count }}
 
             <!-- Репосты -->
             {% if user.is_authenticated %}
                 <button class="repost-btn" data-post-id="{{ post.id }}">
-                    🔁 Репост
+                    <i class="fa-solid fa-retweet"></i>
                 </button>
             {% endif %}
             <span id="repost-count-{{ post.id }}">{{ post.reposts.count }}</span>
 
             {% if user.is_authenticated and user == post.author %}
-                <button class="del-post-btn" data-post-id="{{ post.id }}">Удалить пост</button>
+                <button class="del-post-btn" data-post-id="{{ post.id }}">
+                    <i class="fa-regular fa-trash-can"></i>
+                </button>
             {% endif %}
 
             <!-- Комментарии -->
@@ -84,7 +89,6 @@
 
             <div id="comment-list-{{ post.id }}">
                 <ul id="comments-list-{{ post.id }}">
-
                     {% for comment in post.comments.all reversed %}
                         <li id="comment-{{ comment.id }}">
                             <strong>{{ comment.user.username }}</strong>:
