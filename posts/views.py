@@ -8,8 +8,7 @@ from django.utils import timezone
 from django.views.decorators.http import require_POST
 from django.views.generic import ListView, CreateView
 from django.template.defaultfilters import date as django_date
-from django.db.models import Exists, OuterRef, Prefetch
-
+from django.db.models import Exists, OuterRef, Prefetch, Count
 
 from posts.forms import PostCreationForm, PostImageFormSet
 from posts.models import Post, PostLike, Comment, PostImage, CommentLike
@@ -21,30 +20,56 @@ class PostList(ListView):
     template_name = 'home.html'
 
     def get_queryset(self):
-        posts = Post.objects.all()
+        sort = self.request.GET.get('sort', 'date-new')
+
+        # Базовый queryset с предзагрузкой связей
+        posts = (
+            Post.objects
+            .select_related('author', 'original_post', 'original_post__author')
+            .prefetch_related(
+                'images',
+                'likes',
+                'reposts',
+            )
+            .annotate(
+                likes_count=Count('likes', distinct=True),
+                reposts_count=Count('reposts', distinct=True),
+                comments_count=Count('comments', distinct=True),
+            )
+        )
 
         if self.request.user.is_authenticated:
-            # Аннотируем посты: есть ли лайк текущего пользователя
-            posts = posts.annotate(
+            # Предзагружаем комментарии с аннотацией is_liked и лайками
+            comments_queryset = Comment.objects.select_related('user').annotate(
+                is_liked=Exists(
+                    CommentLike.objects.filter(user=self.request.user, comment=OuterRef('pk'))
+                )
+            ).prefetch_related('comment_likes')
+
+            posts = posts.prefetch_related(
+                Prefetch('comments', queryset=comments_queryset)
+            ).annotate(
                 is_liked=Exists(
                     PostLike.objects.filter(user=self.request.user, post=OuterRef('pk'))
-                )
-            )
-
-            # Предзагружаем комментарии и аннотируем их поле is_liked
-            posts = posts.prefetch_related(
-                Prefetch(
-                    'comments',
-                    queryset=Comment.objects.all().annotate(
-                        is_liked=Exists(
-                            CommentLike.objects.filter(user=self.request.user, comment=OuterRef('pk'))
-                        )
-                    )
                 )
             )
         else:
             # Анонимному пользователю просто предзагружаем комментарии
             posts = posts.prefetch_related('comments')
+
+        # ---------- Сортировка ----------
+        if sort == 'date-new':
+            posts = posts.order_by('-created_at')
+        elif sort == 'date-old':
+            posts = posts.order_by('created_at')
+        elif sort == 'likes':
+            posts = posts.order_by('-likes_count', '-created_at')
+        elif sort == 'reposts':
+            posts = posts.order_by('-reposts_count', '-created_at')
+        elif sort == 'comments':
+            posts = posts.order_by('-comments_count', '-created_at')
+        else:
+            posts = posts.order_by('-created_at')
 
         return posts
 
