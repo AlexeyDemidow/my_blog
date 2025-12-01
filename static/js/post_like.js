@@ -17,11 +17,13 @@ $(document).on('click', '.like-btn, .modal-like-btn', function (event) {
             $('#modal-like-count').html(data.like_count);
 
             // переключаем иконку
-            if (data.is_liked) {
-                btn.html('<i class="fa-solid fa-heart" style="color:red;"></i>');
-            } else {
-                btn.html('<i class="fa-regular fa-heart"></i>');
-            }
+            const iconHtml = data.is_liked
+                ? '<i class="fa-solid fa-heart" style="color:red;"></i>'
+                : '<i class="fa-regular fa-heart"></i>';
+
+            // 🔥 Обновляем ВСЕ кнопки лайка этого поста (и модальные, и обычные)
+            $(`.like-btn[data-post-id="${postId}"]`).html(iconHtml);
+            $(`.modal-like-btn[data-post-id="${postId}"]`).html(iconHtml);
         },
         error: function(error) {
             console.error(error);

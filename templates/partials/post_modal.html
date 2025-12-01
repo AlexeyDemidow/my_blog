@@ -37,7 +37,7 @@
     <!-- Лайки -->
     {% if user.is_authenticated %}
         <button class="modal-like-btn" data-post-id="{{ post.id }}">
-            {% if post.is_liked %}
+            {% if is_liked %}
                 <i class="fa-solid fa-heart" style="color:red;"></i>
             {% else %}
                 <i class="fa-regular fa-heart"></i>
@@ -94,11 +94,12 @@
 
                     {% if user.is_authenticated %}
                         <button class="modal-comment-like-btn" data-comment-id="{{ comment.id }}">
-                        {% if comment.is_liked %}
-                            <i class="fa-solid fa-heart" style="color:red;"></i>
-                        {% else %}
-                            <i class="fa-regular fa-heart"></i>
-                        {% endif %}
+                            {% if comment.is_liked %}
+                                {{ is_liked }}
+                                <i class="fa-solid fa-heart" style="color:red;"></i>
+                            {% else %}
+                                <i class="fa-regular fa-heart"></i>
+                            {% endif %}
                         </button>
                     {% else %}
                         <i class="fa-regular fa-heart"></i>

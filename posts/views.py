@@ -113,6 +113,7 @@ def post_detail(request, pk):
     return render(request, 'partials/post_modal.html', {
         'post': post,
         'comments': comments,
+        'is_liked': post.likes.filter(user=request.user).exists(),
     })
 
 
