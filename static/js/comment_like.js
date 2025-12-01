@@ -1,4 +1,4 @@
-$(document).on('click', '.comment-like-btn, .modal-comment-like-btn', function(event) {
+$(document).on('click', '.modal-comment-like-btn', function(event) {
 
     const csrf = getCookie('csrftoken');
 
@@ -17,15 +17,13 @@ $(document).on('click', '.comment-like-btn, .modal-comment-like-btn', function(e
         success: function(data) {
 
             // обновляем количество лайков
-            $('#actual-comment-like-' + commentId).text(data.like_count);
             $('#modal-actual-comment-like-' + commentId).text(data.like_count);
-
             // переключаем иконку
-            if (data.is_liked) {
-                btn.html('<i class="fa-solid fa-heart" style="color:red;"></i>');
-            } else {
-                btn.html('<i class="fa-regular fa-heart"></i>');
-            }
+            const iconHtml = data.is_liked
+                ? '<i class="fa-solid fa-heart" style="color:red;"></i>'
+                : '<i class="fa-regular fa-heart"></i>';
+
+            $(`.modal-comment-like-btn[data-comment-id="${commentId}"]`).html(iconHtml);
 
         },
         error: function(error) {

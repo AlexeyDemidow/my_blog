@@ -86,16 +86,14 @@
     <div id="comment-list-{{ post.id }}">
         <ul id="modal-comments-list-{{ post.id }}">
 
-            {% for comment in post.comments.all reversed %}
+            {% for comment in comments %}
                 <li id="modal-comment-{{ comment.id }}">
                     <strong>{{ comment.user.username }}</strong>:
                     <span class="comment-text">{{ comment.text }}</span>
                     <small class="text-muted"> {{ comment.created_at }} </small>
-
                     {% if user.is_authenticated %}
                         <button class="modal-comment-like-btn" data-comment-id="{{ comment.id }}">
                             {% if comment.is_liked %}
-                                {{ is_liked }}
                                 <i class="fa-solid fa-heart" style="color:red;"></i>
                             {% else %}
                                 <i class="fa-regular fa-heart"></i>
