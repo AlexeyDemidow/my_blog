@@ -48,7 +48,7 @@
                     {% endfor %}
                 {% endif %}
             </div>
-        <!-- Лайки -->
+            <!-- Лайки -->
             {% if user.is_authenticated %}
                 {% if post.is_liked %}
                     <button class="like-btn" data-post-id="{{ post.id }}">
@@ -59,17 +59,26 @@
                         <i class="fa-regular fa-heart"></i>
                     </button>
                 {% endif %}
+            {% else %}
+                <i class="fa-regular fa-heart"></i>
             {% endif %}
+
+            <!-- Счётчик лайков -->
             <span id="like-actual-{{ post.id }}">{{ post.likes.count }}</span>
+
             <!-- Счетчик комментариев -->
             <i class="fa-regular fa-comment"></i>
             <span id="comment-count">{{ post.comments.count }}</span>
+
             <!-- Репосты -->
             {% if user.is_authenticated %}
                 <button class="repost-btn" data-post-id="{{ post.id }}">
                     <i class="fa-solid fa-retweet"></i>
                 </button>
+            {% else %}
+                <i class="fa-solid fa-retweet"></i>
             {% endif %}
+
             <span id="repost-count-{{ post.id }}">{{ post.reposts.count }}</span>
 
             {% if user.is_authenticated and user == post.author %}
@@ -77,44 +86,6 @@
                     <i class="fa-regular fa-trash-can"></i>
                 </button>
             {% endif %}
-
-            <!-- Комментарии -->
-{#            <strong>Комментарии:</strong>#}
-{##}
-{#            {% if user.is_authenticated %}#}
-{#                <textarea id="comment-text-{{ post.id }}" rows="2"></textarea>#}
-{#                <button class="comment-btn" data-post-id="{{ post.id }}">Отправить</button>#}
-{#            {% endif %}#}
-{##}
-{#            <div id="comment-list-{{ post.id }}">#}
-{#                <ul id="comments-list-{{ post.id }}">#}
-{#                    {% for comment in post.comments.all reversed %}#}
-{#                        <li id="comment-{{ comment.id }}">#}
-{#                            <strong>{{ comment.user.username }}</strong>:#}
-{#                            <span class="comment-text">{{ comment.text }}</span>#}
-{#                            <small class="text-muted"> {{ comment.created_at }} </small>#}
-{##}
-{#                            {% if user.is_authenticated %}#}
-{#                                <button class="comment-like-btn" data-comment-id="{{ comment.id }}">#}
-{#                                {% if comment.is_liked %}#}
-{#                                    <i class="fa-solid fa-heart" style="color:red;"></i>#}
-{#                                {% else %}#}
-{#                                    <i class="fa-regular fa-heart"></i>#}
-{#                                {% endif %}#}
-{#                                </button>#}
-{#                            {% endif %}#}
-{##}
-{#                            <span id="actual-comment-like-{{ comment.id }}">#}
-{#                                {{ comment.comment_likes.count }}#}
-{#                            </span>#}
-{##}
-{#                            {% if user.is_authenticated and user == comment.user %}#}
-{#                                <button class="del-comment-btn" data-comment-id="{{ comment.id }}">Удалить</button>#}
-{#                            {% endif %}#}
-{#                        </li>#}
-{#                    {% endfor %}#}
-
-                </ul>
         </div>
     {% empty %}
         <p>У вас пока нет постов.</p>
