@@ -217,6 +217,18 @@ def repost(request, pk):
     })
 
 
+@login_required
+def get_data_for_repost(request, pk):
+    post = get_object_or_404(Post, id=pk)
+    images = list(post.images.values('image'))
+
+    return JsonResponse({
+        'id': post.id,
+        'author': post.author.username,
+        'content': post.content,
+        'images': images
+    })
+
 
 @login_required
 def like_unlike_comment(request, pk):

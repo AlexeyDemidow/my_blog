@@ -1,53 +1,80 @@
-let repostPostId = null; // пост, который будем репостить
+// Открытие модалки репоста
+$(document).on('click', '.repost-btn', function () {
+    const postId = $(this).data('post-id');
 
-$(document).on('click', '.repost-btn, .modal-repost-btn', function() {
-    repostPostId = $(this).data('post-id');
-
-    // показываем окно ввода текста
-    $('#repost-popup').show();
-});
-
-// --- кнопка "Отмена" ---
-$(document).on('click', '#repost-cancel', function() {
-    $('#repost-popup').hide();
-    $('#repost-text').val('');
-});
-
-// --- кнопка "Репостнуть" ---
-$(document).on('click', '#repost-send', function() {
-    const text = $('#repost-text').val();
-
+    // Загружаем данные поста
     $.ajax({
-        url: `/posts/repost/${repostPostId}/`,
-        type: 'POST',
-        data: {
-            'csrfmiddlewaretoken': getCookie('csrftoken'),
-            'text': text  // ← отправляем подпись
-        },
-        success: function(data) {
-            if (data.status === 'success') {
-                // обновляем оба счётчика
-                let counter = $('#repost-count-' + repostPostId);
-                let modalcounter = $('#modal-repost-count-' + repostPostId);
+        url: `/posts/get_data_for_repost/${postId}/`,
+        type: 'GET',
+        success: function (data) {
 
-                counter.text(parseInt(counter.text()) + 1);
-                modalcounter.text(parseInt(modalcounter.text()) + 1);
+            let html = `
+                <p><strong>@${data.author}</strong></p>
+                <p>${data.content}</p>
+            `;
+
+            if (data.images.length > 0) {
+                data.images.forEach(img => {
+                    console.log(img.image)
+                    html += `<img src="/media/${img.image}" alt="">`;
+                });
             }
 
-            // закрываем окно
-            $('#repost-popup').hide();
-            $('#repost-text').val('');
-        },
-        error: function(err) {
-            console.error(err);
+            $("#repost-original").html(html);
+
+            // Запоминаем ID поста
+            $("#send-repost-btn").data("post-id", postId);
+
+            $("#repostModal").fadeIn(150);
         }
     });
 });
 
-// CSRF
+// Закрытие модалки
+$(document).on('click', '.repost-close', function() {
+    $("#repostModal").fadeOut(150);
+    $("#repost-original").html('');
+    $("#repost-text").val('');
+});
+
+// Отправка репоста
+$(document).on('click', '#send-repost-btn', function () {
+    const postId = $(this).data("post-id");
+    const text = $("#repost-text").val();
+
+    if (!postId) {
+        console.error("Не удалось получить ID поста");
+        return;
+    }
+
+    $.ajax({
+        url: `/posts/repost/${postId}/`,
+        type: 'POST',
+        data: {
+            'text': text,
+            'csrfmiddlewaretoken': getCookie('csrftoken')
+        },
+        success: function (data) {
+            $("#repostModal").fadeOut(150);
+            $("#repost-text").val("");
+
+            let counter = $('#repost-count-' + postId);
+            let modalcounter = $('#modal-repost-count-' + postId);
+            counter.text( parseInt(counter.text()) + 1 );
+            modalcounter.text( parseInt(modalcounter.text()) + 1 );
+        },
+        error: function (err) {
+            console.error(err);
+            alert("Ошибка при отправке репоста");
+        }
+    });
+});
+
+
+
+// Получение cookie CSRF
 function getCookie(name) {
     const value = `; ${document.cookie}`;
     const parts = value.split(`; ${name}=`);
     if (parts.length === 2) return parts.pop().split(';').shift();
-    return null;
 }
