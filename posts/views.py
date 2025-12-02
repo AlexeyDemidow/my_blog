@@ -207,7 +207,8 @@ def repost(request, pk):
 
     new_post = Post.objects.create(
         author=request.user,
-        original_post=original
+        original_post=original,
+        repost_text=request.POST.get("text", "")
     )
 
     return JsonResponse({

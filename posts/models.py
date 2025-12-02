@@ -5,7 +5,8 @@ from users.models import CustomUser
 
 class Post(models.Model):
     author = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
-    content = models.TextField()
+    content = models.TextField(blank=True, null=True)
+    repost_text = models.TextField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     # Если это репост — здесь ссылка на оригинал

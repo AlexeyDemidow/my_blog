@@ -36,8 +36,8 @@ class PostAdmin(admin.ModelAdmin):
     inlines = [PostImageInline, CommentInline]
 
     def short_content(self, obj):
-        return obj.content[:40] + "..." if len(obj.content) > 40 else obj.content
-    short_content.short_description = "Content"
+        content = obj.content or ""
+        return content[:40] + "..." if len(content) > 40 else content
 
     def likes_count(self, obj):
         return obj.likes.count()
