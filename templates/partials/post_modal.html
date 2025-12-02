@@ -37,7 +37,7 @@
     <!-- Лайки -->
     {% if user.is_authenticated %}
         <button class="modal-like-btn" data-post-id="{{ post.id }}">
-            {% if is_liked %}
+            {% if post.is_liked %}
                 <i class="fa-solid fa-heart" style="color:red;"></i>
             {% else %}
                 <i class="fa-regular fa-heart"></i>

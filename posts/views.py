@@ -108,20 +108,48 @@ class PostCreate(LoginRequiredMixin, CreateView):
 
 
 def post_detail(request, pk):
-    post = get_object_or_404(Post, id=pk)
+    post = (
+        Post.objects
+        .prefetch_related(
+            'likes',                      # пост лайки
+            'comments__comment_likes',    # лайки комментариев
+            'comments__user',             # авторы комментариев
+        )
+        .get(id=pk)
+    )
 
     comments = post.comments.all().order_by('-created_at')
-    if request.user.is_authenticated:
-        for comment in comments:
-            comment.is_liked = comment.comment_likes.filter(user=request.user).exists()
-    else:
-        for comment in comments:
-            comment.is_liked = False
+
+    # Если юзер не авторизован — просто помечаем флаги
+    if not request.user.is_authenticated:
+        post.is_liked = False
+        for c in comments:
+            c.is_liked = False
+        return render(request, 'partials/post_modal.html', {
+            'post': post,
+            'comments': comments,
+        })
+
+    # ✔️ Получаем ВСЕ лайки пользователя одним запросом
+    user_likes_post = post.likes.filter(user=request.user).exists()
+
+    user_liked_comment_ids = set(
+        CommentLike.objects.filter(
+            user=request.user,
+            comment__in=comments
+        ).values_list('comment_id', flat=True)
+    )
+
+    # Проставляем флаги
+    post.is_liked = user_likes_post
+    for c in comments:
+        c.is_liked = c.id in user_liked_comment_ids
 
     return render(request, 'partials/post_modal.html', {
         'post': post,
         'comments': comments,
     })
+
 
 
 
