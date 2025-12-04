@@ -151,8 +151,6 @@ def post_detail(request, pk):
     })
 
 
-
-
 @require_POST
 @login_required
 def post_delete(request, pk):

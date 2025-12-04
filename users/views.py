@@ -49,8 +49,16 @@ class Profile(LoginRequiredMixin, DetailView):
         context = super().get_context_data(**kwargs)
 
         user = self.get_object()
-        context['posts'] = user.post_set.all()
+        posts = user.post_set.all()
 
+        if self.request.user.is_authenticated:
+            for post in posts:
+                post.is_liked = post.likes.filter(user=self.request.user).exists()
+        else:
+            for post in posts:
+                post.is_liked = False
+
+        context['posts'] = posts
         return context
 
 class ProfileSettings(TemplateView):
