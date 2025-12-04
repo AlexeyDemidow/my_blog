@@ -95,7 +95,6 @@
             {% endif %}
         </div>
 
-        <!-- MODAL: Repost -->
         <div id="repostModal" class="repost-modal">
             <div class="repost-modal-content">
 
@@ -106,7 +105,7 @@
                 <div id="repost-original" class="repost-original-block"></div>
                 <!-- Поле для своей подписи -->
                 <textarea id="repost-text" class="repost-textarea" placeholder="Добавьте свою подпись..."></textarea>
-                <button id="send-repost-btn" class="repost-send-btn">
+                <button id="send-repost-btn" class="repost-send-btn" data-post-id="{{ post.id }}">
                     Репост
                 </button>
 
@@ -117,4 +116,7 @@
         <p>У вас пока нет постов.</p>
     {% endfor %}
 </div>
+
+
+
 {% endblock %}

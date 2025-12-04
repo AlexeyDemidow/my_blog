@@ -208,10 +208,16 @@ def repost(request, pk):
         original_post=original,
         repost_text=request.POST.get("text", "")
     )
-
     return JsonResponse({
         'status': 'success',
-        'post_id': new_post.id
+        'id': new_post.id,
+        'avatar': str(original.author.avatar),
+        'author': new_post.author.username,
+        'text': new_post.repost_text,
+        'created_at': new_post.created_at.strftime('%Y-%m-%d %H:%M'),
+        'orig_author': original.author.username,
+        'orig_content': original.content,
+        'orig_images': list(original.images.values('image'))
     })
 
 

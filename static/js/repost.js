@@ -15,7 +15,6 @@ $(document).on('click', '.repost-btn', function () {
 
             if (data.images.length > 0) {
                 data.images.forEach(img => {
-                    console.log(img.image)
                     html += `<img src="/media/${img.image}" alt="">`;
                 });
             }
@@ -42,11 +41,6 @@ $(document).on('click', '#send-repost-btn', function () {
     const postId = $(this).data("post-id");
     const text = $("#repost-text").val();
 
-    if (!postId) {
-        console.error("Не удалось получить ID поста");
-        return;
-    }
-
     $.ajax({
         url: `/posts/repost/${postId}/`,
         type: 'POST',
@@ -62,12 +56,57 @@ $(document).on('click', '#send-repost-btn', function () {
             let modalcounter = $('#modal-repost-count-' + postId);
             counter.text( parseInt(counter.text()) + 1 );
             modalcounter.text( parseInt(modalcounter.text()) + 1 );
-        },
-        error: function (err) {
-            console.error(err);
-            alert("Ошибка при отправке репоста");
+
+            let imagesHTML = '';
+                data.orig_images.forEach(img => {
+                    imagesHTML += `<img src="/media/${img.image}" class="r-img" style="max-width:200px;border-radius:10px;margin-top:10px;">`;
+                });
+
+                let newPost = `
+                    <div class="post" data-post-id="${data.id}" id="post-item-${data.id}">
+            
+                        <div class="post open-post" data-post-id="${data.id}">
+                            <p style="color:green;">
+                                🔁 ${data.author} сделал репост
+                            </p>
+            
+                            ${data.text ? `<p>${data.text}</p>` : ''}
+            
+                            <div class="repost-box" style="border:1px solid #ccc;padding:10px;border-radius:10px;">
+                            <p>
+                                <img src="/media/avatars/${data.avatar}" class="round" style="width:40px;height:40px;">
+                            </p>
+                                <h3>${data.orig_author}</h3>
+                                <p>${data.orig_content}</p>
+                                ${imagesHTML}
+                            </div>
+                        </div>
+            
+                        <button class="like-btn" data-post-id="${data.id}">
+                            <i class="fa-regular fa-heart"></i>
+                        </button>
+                        <span id="like-actual-${data.id}">0</span>
+            
+                        <i class="fa-regular fa-comment"></i>
+                        <span id="comment-count">0</span>
+            
+                        <button class="repost-btn" data-post-id="${data.id}">
+                            <i class="fa-solid fa-retweet"></i>
+                        </button>
+                        <span id="repost-count-${data.id}">0</span>
+            
+                        <button class="del-post-btn" data-post-id="${data.id}">
+                            <i class="fa-regular fa-trash-can"></i>
+                        </button>
+                    </div>
+                `;
+
+            // Добавляем новый репост в начало
+            $("#posts-container").prepend(newPost);
         }
+
     });
+
 });
 
 

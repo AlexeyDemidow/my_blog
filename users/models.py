@@ -32,7 +32,7 @@ class CustomUserManager(BaseUserManager):
 class CustomUser(AbstractUser):
     email = models.EmailField(_('email address'), unique=True)
     username = models.CharField(max_length=150, blank=True, verbose_name='Имя пользователя', unique=True)
-    avatar = models.ImageField(default='default.png', upload_to='avatars/', verbose_name='Аватар',)
+    avatar = models.ImageField(default='avatars/default.png', upload_to='avatars/', verbose_name='Аватар',)
     bio = models.CharField(max_length=300, blank=True, verbose_name='О себе')
 
     USERNAME_FIELD = 'email'
