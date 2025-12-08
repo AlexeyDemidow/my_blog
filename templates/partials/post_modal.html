@@ -2,7 +2,9 @@
     {% if post.original_post %}
         <!-- 🔁 Репост -->
         <p style="color:green;">
-            🔁 {{ post.author.username }} сделал репост
+{#            🔁 {{ post.author.username }} сделал репост#}
+            <a href="{% url 'profile' post.author.id %}">🔁 {{ post.author.username }}</a>
+            сделал репост
         </p>
 
         {% with orig=post.original_post %}
@@ -10,7 +12,9 @@
             <p>
                 <img src="{{ orig.author.avatar.url }}" class="round" style="width:40px;height:40px;">
             </p>
-            <h3>{{ orig.author.username }}</h3>
+            <h3>
+                <a href="{% url 'profile' orig.author.id %}">🔁 {{ orig.author.username }}</a>
+            </h3>
             <p>{{ orig.content }}</p>
             <small>{{ orig.created_at }}</small>
 
@@ -24,6 +28,9 @@
         <!-- Обычный пост -->
         <p><img src="{{ post.author.avatar.url }}" alt="Аватар" class="round"></p>
         <h3>{{ post.author.username }}</h3>
+        <h3>
+            <a href="{% url 'profile' post.author.id %}">🔁 {{ post.author.username }}</a>
+        </h3>
         <p>{{ post.content }}</p>
         <small>{{ post.created_at }}</small>
 

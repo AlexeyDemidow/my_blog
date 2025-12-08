@@ -4,17 +4,17 @@
 
 {% block content %}
 <div class="profile-page">
-
     <!-- Информация о пользователе -->
     <div class="form">
-        <p><img src="{{ user.avatar.url }}" alt="Аватар" class="round"></p>
-        <h1>{{ user.username }}</h1>
-        <p>Email: {{ user.email }}</p>
-        <p>О себе: {{ user.bio }}</p>
+        <p><img src="{{ c_user.avatar.url }}" alt="Аватар" class="round"></p>
+        <h1>{{ c_user.username }}</h1>
+        <p>Email: {{ c_user.email }}</p>
+        <p>О себе: {{ c_user.bio }}</p>
     </div>
 
-    <a href="{% url 'post_create' %}" class="nav-btn">Создать пост</a>
-
+    {% if user == c_user %}
+        <a href="{% url 'post_create' %}" class="nav-btn">Создать пост</a>
+    {% endif %}
     <!-- ЛЕНТА -->
     <section class="feed">
 
@@ -28,7 +28,9 @@
 
                         <div class="repost-box">
                             <p><img src="{{ post.original_post.author.avatar.url }}" class="round"></p>
-                            <h3>{{ post.original_post.author.username }}</h3>
+                            <h3>
+                                <a href="{% url 'profile' post.original_post.author.id %}">🔁 {{ post.original_post.author.username }}</a>
+                            </h3>
                             <p>{{ post.original_post.content }}</p>
                             <small>{{ post.original_post.created_at }}</small>
 

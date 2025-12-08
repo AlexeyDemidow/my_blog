@@ -59,6 +59,7 @@ class Profile(LoginRequiredMixin, DetailView):
                 post.is_liked = False
 
         context['posts'] = posts
+        context['c_user'] = user
         return context
 
 class ProfileSettings(TemplateView):
