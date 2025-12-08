@@ -19,13 +19,15 @@
     <section class="feed">
 
         {% for post in posts reversed %}
-            <div class="post" id="post-item-{{ post.id }}">
+            <div class="post" data-post-id="{{ post.id }}" id="post-item-{{ post.id }}">
 
                 {# ████████ 1. ЕСЛИ ЭТО РЕПОСТ ████████ #}
                 <div class="post open-post" data-post-id="{{ post.id }}">
                     {% if post.original_post %}
                         <p><strong>{{ post.author.username }}</strong> сделал репост:</p>
-
+                        {% if post.repost_text %}
+                            <p>{{ post.repost_text }}</p>
+                        {% endif %}
                         <div class="repost-box">
                             <p><img src="{{ post.original_post.author.avatar.url }}" class="round"></p>
                             <h3>
@@ -68,12 +70,19 @@
                 <i class="fa-regular fa-comment"></i>
                 <span id="comment-count">{{ post.comments.count }}</span>
 
-                {% if user.is_authenticated %}
-                    <button class="repost-btn" data-post-id="{{ post.id }}">
+                {% if not post.original_post %}
+                    {% if user != c_user %}
+                        <button class="repost-btn" data-post-id="{{ post.id }}">
+                            <i class="fa-solid fa-retweet"></i>
+                        </button>
+                    {% else %}
                         <i class="fa-solid fa-retweet"></i>
-                    </button>
-                {% endif %}
+                    {% endif %}
                 <span id="repost-count-{{ post.id }}">{{ post.reposts.count }}</span>
+                {% else %}
+                    <i class="fa-solid fa-retweet"></i>
+                    <span id="repost-count-{{ post.id }}">{{ post.reposts.count }}</span>
+                {% endif %}
 
                 {% if user.is_authenticated and user == post.author %}
                     <button class="del-post-btn" data-post-id="{{ post.id }}">
@@ -86,5 +95,23 @@
         {% endfor %}
 
     </section>
+
+    <div id="repostModal" class="repost-modal">
+        <div class="repost-modal-content">
+
+            <span class="repost-close">&times;</span>
+
+            <h3>Репост</h3>
+            <!-- Оригинальный пост -->
+            <div id="repost-original" class="repost-original-block"></div>
+            <!-- Поле для своей подписи -->
+            <textarea id="repost-text" class="repost-textarea" placeholder="Добавьте свою подпись..."></textarea>
+            <button id="send-repost-btn" class="repost-send-btn" data-post-id="{{ post.id }}">
+                Репост
+            </button>
+
+        </div>
+    </div>
+
 </div>
 {% endblock %}
