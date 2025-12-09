@@ -2,7 +2,6 @@
     {% if post.original_post %}
         <!-- 🔁 Репост -->
         <p style="color:green;">
-{#            🔁 {{ post.author.username }} сделал репост#}
             <a href="{% url 'profile' post.author.id %}">🔁 {{ post.author.username }}</a>
             сделал репост
         </p>
@@ -27,9 +26,8 @@
     {% else %}
         <!-- Обычный пост -->
         <p><img src="{{ post.author.avatar.url }}" alt="Аватар" class="round"></p>
-        <h3>{{ post.author.username }}</h3>
         <h3>
-            <a href="{% url 'profile' post.author.id %}">🔁 {{ post.author.username }}</a>
+            <a href="{% url 'profile' post.author.id %}">{{ post.author.username }}</a>
         </h3>
         <p>{{ post.content }}</p>
         <small>{{ post.created_at }}</small>
@@ -90,9 +88,17 @@
         <button class="modal-comment-btn" data-post-id="{{ post.id }}">Отправить</button>
     {% endif %}
 
-    <div id="comment-list-{{ post.id }}">
-        <ul id="modal-comments-list-{{ post.id }}">
+    <div class="modal-sort-container" style="margin-bottom:15px;">
+        <select class="modal-sort-selector" data-post-id="{{ post.id }}">
+            <option value="modal-date-new">По дате (сначала новые)</option>
+            <option value="modal-date-old">По дате (сначала старые)</option>
+            <option value="modal-likes">По лайкам</option>
+        </select>
+    </div>
 
+    <div id="comment-list-{{ post.id }}" class="comments" data-post-id="{{ post.id }}">
+
+        <ul id="modal-comments-list-{{ post.id }}">
             {% for comment in comments %}
                 <li id="modal-comment-{{ comment.id }}">
                     <strong>{{ comment.user.username }}</strong>:

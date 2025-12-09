@@ -7,7 +7,7 @@ from users.views import SignUpView, SignUpSuccess, Login, Profile, UpdateProfile
 from django.contrib.auth import views
 
 urlpatterns = [
-    path('post_detail/<int:pk>/', post_detail, name="post_detail"),
+    path('post_detail/<int:pk>/', post_detail, name='post_detail'),
     path('like_unlike/<int:pk>/', like_unlike_post, name='like_unlike_post'),
     path('repost/<int:pk>/', repost, name='repost'),
     path('get_data_for_repost/<int:pk>/', get_data_for_repost, name='get_data_for_repost'),

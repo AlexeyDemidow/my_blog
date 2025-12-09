@@ -117,8 +117,19 @@ def post_detail(request, pk):
         )
         .get(id=pk)
     )
+    comms_sort = request.GET.get('comms_sort', 'modal-date-new')
+    comments = post.comments.all().annotate(likes_count=Count('comment_likes', distinct=True))
 
-    comments = post.comments.all().order_by('-created_at')
+    # ---------- Сортировка ----------
+    if comms_sort == 'modal-date-new':
+        comments = comments.order_by('-created_at')
+    elif comms_sort == 'modal-date-old':
+        comments = comments.order_by('created_at')
+    elif comms_sort == 'modal-likes':
+        comments = comments.order_by('-likes_count', '-created_at')
+    else:
+        comments = comments.order_by('-created_at')
+
 
     # Если юзер не авторизован — просто помечаем флаги
     if not request.user.is_authenticated:
