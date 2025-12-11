@@ -1,0 +1,82 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Редактирование поста{% endblock %}
+
+{% block content %}
+
+<div class="post-creation-page">
+
+    <h2>Редактирование поста</h2>
+
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        <!-- Основная форма поста -->
+        <div>
+            {{ form.as_p }}
+        </div>
+
+        <h3>Изображения поста</h3>
+{{ images_formset.management_form }}
+
+<div id="images">
+    {% for f in images_formset %}
+    <div class="image-form" style="{% if not f.instance.pk %}display:none;{% endif %}">
+        {{ f.image }}
+
+        {% if f.instance.pk %}
+            <p>Текущая картинка:</p>
+            <img src="{{ f.instance.image.url }}" style="width:160px; height:160px; object-fit:cover; border:1px solid #ccc;">
+        {% endif %}
+
+        {% if f.DELETE %}
+            {{ f.DELETE }}
+            <label for="{{ f.DELETE.id_for_label }}">Удалить</label>
+        {% endif %}
+
+        <img class="preview-new"
+             style="display:none; width:160px; height:160px; object-fit:cover; border:1px solid #ccc; margin-top:10px;">
+
+        <button type="button" class="remove-image" style="display:none;">Удалить</button>
+    </div>
+    {% endfor %}
+</div>
+
+
+
+        <hr>
+
+        <h3>Добавить новые изображения</h3>
+
+{{ images_formset.management_form }}
+
+<div id="new-images">
+    {% for f in images_formset %}
+    <div class="image-form" style="display: none;">
+        {{ f.as_p }}
+        <img class="preview-new"
+             style="display:none; width:160px; height:160px; object-fit:cover; border:1px solid #ccc; margin-top:10px;">
+
+{#        <button type="button" class="remove-image" style="display:none;">Удалить</button>#}
+    </div>
+    {% endfor %}
+</div>
+
+<button type="button" id="add-photo">Добавить фото</button>
+
+        <br><br>
+
+        <button type="submit" class="save-btn">Сохранить изменения</button>
+
+    </form>
+
+</div>
+
+
+
+<!-- ====================== CSS ====================== -->
+<style>
+
+</style>
+
+{% endblock %}

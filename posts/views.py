@@ -6,7 +6,7 @@ from django.shortcuts import render, get_object_or_404
 from django.urls import reverse_lazy
 from django.utils import timezone
 from django.views.decorators.http import require_POST
-from django.views.generic import ListView, CreateView
+from django.views.generic import ListView, CreateView, UpdateView
 from django.template.defaultfilters import date as django_date
 from django.db.models import Exists, OuterRef, Prefetch, Count
 
@@ -99,6 +99,48 @@ class PostCreate(LoginRequiredMixin, CreateView):
             self.object = form.save()  # Сохраняем пост
             images_formset.instance = self.object
             images_formset.save()  # Сохраняем изображения
+            return super().form_valid(form)
+        else:
+            return self.form_invalid(form)
+
+    def get_success_url(self):
+        return reverse_lazy('profile', kwargs={'pk': self.request.user.pk})
+
+
+class PostUpdate(LoginRequiredMixin, UpdateView):
+    model = Post
+    form_class = PostCreationForm
+    template_name = 'update_post.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        # Исправлено: can_delete=True
+        ImageFormSet = inlineformset_factory(Post, PostImage, fields=('image',), extra=50, can_delete=True)
+
+        if self.request.POST:
+            context['images_formset'] = ImageFormSet(
+                self.request.POST,
+                self.request.FILES,
+                instance=self.object
+            )
+        else:
+            context['images_formset'] = ImageFormSet(instance=self.object)
+
+        # Текущие изображения для шаблона
+        context['post_images'] = self.object.images.all()
+        return context
+
+    def form_valid(self, form):
+        context = self.get_context_data()
+        images_formset = context['images_formset']
+
+        form.instance.author = self.request.user
+
+        if form.is_valid() and images_formset.is_valid():
+            self.object = form.save()
+            images_formset.instance = self.object
+            images_formset.save()  # сохранение добавленных/удалённых изображений
             return super().form_valid(form)
         else:
             return self.form_invalid(form)

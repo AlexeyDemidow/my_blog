@@ -453,3 +453,61 @@ button[type="submit"]:hover {
     from { opacity: 0; transform: scale(0.95); }
     to { opacity: 1; transform: scale(1); }
 }
+
+
+/* Обновление поста */
+.image-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.image-card {
+    width: 160px;
+    text-align: center;
+    position: relative;
+}
+
+.image-preview-existing {
+    width: 160px;
+    height: 160px;
+    object-fit: cover;
+    border: 1px solid #bbb;
+    border-radius: 5px;
+}
+
+.delete-existing {
+    margin-top: 7px;
+    padding: 5px 10px;
+    background: #d62828;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.delete-existing:hover {
+    background: #b71c1c;
+}
+
+.image-form {
+    margin-bottom: 20px;
+}
+
+#add-photo {
+    padding: 7px 15px;
+    background: #4a6ef5;
+    border-radius: 5px;
+    border: none;
+    color: white;
+    cursor: pointer;
+}
+
+.save-btn {
+    padding: 10px 20px;
+    background: #1a8917;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}

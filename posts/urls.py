@@ -2,11 +2,12 @@ from django.conf import Settings
 from django.urls import path
 
 from posts.views import PostList, PostCreate, like_unlike_post, add_comment, del_comment, post_delete, \
-    like_unlike_comment, repost, post_detail, get_data_for_repost
+    like_unlike_comment, repost, post_detail, get_data_for_repost, PostUpdate
 from users.views import SignUpView, SignUpSuccess, Login, Profile, UpdateProfile, ProfileSettings
 from django.contrib.auth import views
 
 urlpatterns = [
+    path('update/<int:pk>/', PostUpdate.as_view(), name='post_update'),
     path('post_detail/<int:pk>/', post_detail, name='post_detail'),
     path('like_unlike/<int:pk>/', like_unlike_post, name='like_unlike_post'),
     path('repost/<int:pk>/', repost, name='repost'),
