@@ -40,3 +40,34 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     });
 });
+
+document.addEventListener("DOMContentLoaded", () => {
+    // Получаем все контейнеры меню
+    const menus = document.querySelectorAll(".options-menu");
+
+    menus.forEach(menu => {
+        const btn = menu.querySelector(".options-btn");
+        const dropdown = menu.querySelector(".dropdown");
+
+        btn.addEventListener("click", (e) => {
+            e.stopPropagation(); // чтобы клик не закрывал меню сразу
+            // Закрываем все другие открытые меню
+            menus.forEach(m => {
+                const dd = m.querySelector(".dropdown");
+                if (dd !== dropdown) dd.style.display = "none";
+            });
+
+            // Переключаем текущее меню
+            dropdown.style.display = dropdown.style.display === "block" ? "none" : "block";
+        });
+    });
+
+    // Закрыть все меню при клике вне
+    document.addEventListener("click", () => {
+        menus.forEach(menu => {
+            const dd = menu.querySelector(".dropdown");
+            dd.style.display = "none";
+        });
+    });
+});
+
