@@ -2,6 +2,7 @@
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.views import LoginView
+from django.db.models import Count
 from django.urls import reverse_lazy
 from django.views.generic import CreateView, TemplateView, DetailView, UpdateView
 
@@ -46,10 +47,15 @@ class Profile(LoginRequiredMixin, DetailView):
     login_url = 'login'
 
     def get_context_data(self, **kwargs):
+        sort = self.request.GET.get('sort', 'date-new')
         context = super().get_context_data(**kwargs)
 
         user = self.get_object()
-        posts = user.post_set.all()
+        posts = user.post_set.all().annotate(
+                likes_count=Count('likes', distinct=True),
+                reposts_count=Count('reposts', distinct=True),
+                comments_count=Count('comments', distinct=True),
+            )
 
         if self.request.user.is_authenticated:
             for post in posts:
@@ -57,6 +63,19 @@ class Profile(LoginRequiredMixin, DetailView):
         else:
             for post in posts:
                 post.is_liked = False
+
+        if sort == 'date-new':
+            posts = posts.order_by('-created_at')
+        elif sort == 'date-old':
+            posts = posts.order_by('created_at')
+        elif sort == 'likes':
+            posts = posts.order_by('-likes_count', '-created_at')
+        elif sort == 'reposts':
+            posts = posts.order_by('-reposts_count', '-created_at')
+        elif sort == 'comments':
+            posts = posts.order_by('-comments_count', '-created_at')
+        else:
+            posts = posts.order_by('-created_at')
 
         context['posts'] = posts
         context['c_user'] = user
