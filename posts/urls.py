@@ -2,7 +2,7 @@ from django.conf import Settings
 from django.urls import path
 
 from posts.views import PostList, PostCreate, like_unlike_post, add_comment, del_comment, post_delete, \
-    like_unlike_comment, repost, post_detail, get_data_for_repost, PostUpdate
+    like_unlike_comment, repost, post_detail, get_data_for_repost, PostUpdate, pag_posts
 from users.views import SignUpView, SignUpSuccess, Login, Profile, UpdateProfile, ProfileSettings
 from django.contrib.auth import views
 
@@ -17,5 +17,7 @@ urlpatterns = [
     path('del_comment/<int:pk>/', del_comment, name='del_comment'),
     path('create/', PostCreate.as_view(), name='post_create'),
     path('delete/<int:pk>/', post_delete, name='post_delete'),
+    path('paginate/', pag_posts, name='paginate_posts'),
+
 
 ]

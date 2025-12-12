@@ -1,8 +1,10 @@
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.core.paginator import Paginator
 from django.forms import modelformset_factory, inlineformset_factory
 from django.http import JsonResponse, HttpResponseBadRequest
 from django.shortcuts import render, get_object_or_404
+from django.template.loader import render_to_string
 from django.urls import reverse_lazy
 from django.utils import timezone
 from django.views.decorators.http import require_POST
@@ -18,6 +20,7 @@ class PostList(ListView):
     model = Post
     context_object_name = 'posts'
     template_name = 'home.html'
+    paginate_by = 3
 
     def get_queryset(self):
         sort = self.request.GET.get('sort', 'date-new')
@@ -349,3 +352,23 @@ def del_comment(request, pk):
     comment.delete()
 
     return JsonResponse({'status': 'success'})
+
+
+def pag_posts(request):
+    page = request.GET.get("page", 1)
+    sort = request.GET.get("sort", "date-new")
+
+    view = PostList()
+    view.request = request
+    queryset = view.get_queryset()
+
+    paginator = Paginator(queryset, 3)
+    posts = paginator.get_page(page)
+
+    html = render_to_string("partials/post_items.html", {"posts": posts, "user": request.user})
+
+    return JsonResponse({
+        "posts_html": html,
+        "has_next": posts.has_next(),
+        "next_page": posts.next_page_number() if posts.has_next() else None,
+    })
