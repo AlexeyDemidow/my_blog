@@ -1,148 +1,32 @@
+
 {% extends 'base.html' %}
 
 {% block title %}Профиль{% endblock %}
 
 {% block content %}
+    <!-- Информация о пользователе -->
+    <div class="form">
+        <p><img src="{{ c_user.avatar.url }}" alt="Аватар" class="round"></p>
+        <h1>{{ c_user.username }}</h1>
+        <p>Email: {{ c_user.email }}</p>
+        <p>О себе: {{ c_user.bio }}</p>
+    </div>
 
-<!-- Информация о пользователе -->
-<div class="form">
-    <p><img src="{{ c_user.avatar.url }}" alt="Аватар" class="round"></p>
-    <h1>{{ c_user.username }}</h1>
-    <p>Email: {{ c_user.email }}</p>
-    <p>О себе: {{ c_user.bio }}</p>
-</div>
-
-{% if user == c_user %}
-    <a href="{% url 'post_create' %}" class="nav-btn">Создать пост</a>
-{% endif %}
-<!-- ЛЕНТА -->
-
-<div class="sort-container" style="margin-bottom:15px;">
-    <select id="sort-selector">
-        <option value="date-new">По дате (сначала новые)</option>
-        <option value="date-old">По дате (сначала старые)</option>
-        <option value="likes">По лайкам</option>
-        <option value="reposts">По репостам</option>
-        <option value="comments">По комментариям</option>
+    {% if user == c_user %}
+        <a href="{% url 'post_create' %}" class="nav-btn">Создать пост</a>
+    {% endif %}
+    <!-- ЛЕНТА -->
+<form method="get" class="sort-container" style="margin-bottom:15px;">
+    <select name="sort" onchange="this.form.submit()">
+        <option value="date-new" {% if request.GET.sort == 'date-new' or not request.GET.sort %}selected{% endif %}>По дате (сначала новые)</option>
+        <option value="date-old" {% if request.GET.sort == 'date-old' %}selected{% endif %}>По дате (сначала старые)</option>
+        <option value="likes" {% if request.GET.sort == 'likes' %}selected{% endif %}>По лайкам</option>
+        <option value="reposts" {% if request.GET.sort == 'reposts' %}selected{% endif %}>По репостам</option>
+        <option value="comments" {% if request.GET.sort == 'comments' %}selected{% endif %}>По комментариям</option>
     </select>
-</div>
+</form>
+
 <div id="posts-container">
-    {% for post in posts %}
-        <div class="post" data-post-id="{{ post.id }}" id="post-item-{{ post.id }}">
-
-            {% if user.is_authenticated and user == post.author %}
-                <div class="options-menu" data-post-id="{{ post.id }}">
-                    <button class="options-btn">⋮</button>
-                    <div class="dropdown">
-                        <a href="{% url 'post_update' post.id %}">Изменить пост</a>
-                        <button class="del-post-btn" data-post-id="{{ post.id }}">
-                            Удалить пост
-                        </button>
-                    </div>
-                </div>
-            {% endif %}
-
-            <div class="post open-post" data-post-id="{{ post.id }}" id="post-item-{{ post.id }}">
-
-                {% if post.original_post %}
-                    <!-- 🔁 Репост -->
-                    <p style="color:green;">
-                        <a href="{% url 'profile' post.author.id %}">🔁 {{ post.author.username }}</a>
-                        сделал репост
-                    </p>
-                    {% if post.repost_text %}
-                        <p>{{ post.repost_text }}</p>
-                    {% endif %}
-
-                    {% with orig=post.original_post %}
-                        <div class="repost-box" style="border:1px solid #ccc; padding:10px; border-radius:10px;">
-                            <p>
-                                <img src="{{ orig.author.avatar.url }}" class="round" style="width:40px;height:40px;">
-                            </p>
-                            <h3>
-                                <a href="{% url 'profile' orig.author.id %}">🔁 {{ orig.author.username }}</a>
-                            </h3>
-
-                            <p>{{ orig.content }}</p>
-                            <small>{{ orig.created_at }}</small>
-
-                            {% for img in orig.images.all %}
-                                <img src="{{ img.image.url }}" style="max-width:200px; border-radius:10px; margin-top:10px;">
-                            {% endfor %}
-                        </div>
-                    {% endwith %}
-
-                {% else %}
-                    <!-- Обычный пост -->
-                    <p><img src="{{ post.author.avatar.url }}" alt="Аватар" class="round"></p>
-                    <h3>
-                        <a href="{% url 'profile' post.author.id %}">{{ post.author.username }}</a>
-                    </h3>
-
-                    <p>{{ post.content }}</p>
-                    <small>{{ post.created_at }}</small>
-
-                    {% for img in post.images.all %}
-                        <img src="{{ img.image.url }}" style="max-width:200px; border-radius:10px; margin-top:10px;">
-                    {% endfor %}
-                {% endif %}
-            </div>
-            <!-- Лайки -->
-            {% if user.is_authenticated %}
-                {% if post.is_liked %}
-                    <button class="like-btn" data-post-id="{{ post.id }}">
-                        <i class="fa-solid fa-heart" style="color:red;"></i>
-                    </button>
-                {% else %}
-                    <button class="like-btn" data-post-id="{{ post.id }}">
-                        <i class="fa-regular fa-heart"></i>
-                    </button>
-                {% endif %}
-            {% else %}
-                <i class="fa-regular fa-heart"></i>
-            {% endif %}
-
-            <!-- Счётчик лайков -->
-            <span id="like-actual-{{ post.id }}">{{ post.likes.count }}</span>
-
-            <!-- Счетчик комментариев -->
-            <i class="fa-regular fa-comment"></i>
-            <span id="comment-count">{{ post.comments.count }}</span>
-
-            <!-- Репосты -->
-            {% if not post.original_post %}
-                {% if user.is_authenticated and user != post.author%}
-                    <button class="repost-btn" data-post-id="{{ post.id }}">
-                        <i class="fa-solid fa-retweet"></i>
-                    </button>
-                    <span id="repost-count-{{ post.id }}">{{ post.reposts.count }}</span>
-                {% else %}
-                    <i class="fa-solid fa-retweet"></i>
-                    <span id="repost-count-{{ post.id }}">{{ post.reposts.count }}</span>
-                {% endif %}
-            {% else %}
-                <i class="fa-solid fa-retweet"></i>
-                <span id="repost-count-{{ post.id }}">{{ post.reposts.count }}</span>
-            {% endif %}
-
-        </div>
-
-        <div id="repostModal" class="repost-modal">
-            <div class="repost-modal-content">
-
-                <span class="repost-close">&times;</span>
-
-                <h3>Репост</h3>
-                <!-- Оригинальный пост -->
-                <div id="repost-original" class="repost-original-block"></div>
-                <!-- Поле для своей подписи -->
-                <textarea id="repost-text" class="repost-textarea" placeholder="Добавьте свою подпись..."></textarea>
-                <button id="send-repost-btn" class="repost-send-btn" data-post-id="{{ post.id }}">
-                    Репост
-                </button>
-
-            </div>
-        </div>
+    {% include "partials/post_items.html" %}
 </div>
-{% endfor %}
 {% endblock %}

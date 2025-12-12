@@ -95,12 +95,6 @@
             <i class="fa-solid fa-retweet"></i>
             <span id="repost-count-{{ post.id }}">{{ post.reposts.count }}</span>
         {% endif %}
-
-{#            {% if user.is_authenticated and user == post.author %}#}
-{#                <button class="del-post-btn" data-post-id="{{ post.id }}">#}
-{#                    <i class="fa-regular fa-trash-can"></i>#}
-{#                </button>#}
-{#            {% endif %}#}
     </div>
 
     <div id="repostModal" class="repost-modal">
