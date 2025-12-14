@@ -1,0 +1,22 @@
+from django.db import models
+from users.models import CustomUser
+
+
+class Dialog(models.Model):
+    users = models.ManyToManyField(CustomUser, related_name='dialogs')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f'Dialog {self.id}'
+
+
+class Message(models.Model):
+    dialog = models.ForeignKey(Dialog, on_delete=models.CASCADE, related_name='messages')
+    sender = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    text = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    is_read = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f'{self.sender}: {self.text[:20]}'
+

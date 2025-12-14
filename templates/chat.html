@@ -1,0 +1,158 @@
+{% extends 'base.html' %}
+
+{% block title %}Чат{% endblock %}
+{% block content %}
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f4f4;
+        }
+
+        .chat-container {
+            width: 400px;
+            margin: 50px auto;
+            background: #fff;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            height: 500px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .chat-header {
+            padding: 10px;
+            background: #4a76a8;
+            color: #fff;
+            border-radius: 8px 8px 0 0;
+            text-align: center;
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 10px;
+            overflow-y: auto;
+        }
+
+        .message {
+            margin-bottom: 10px;
+        }
+
+        .message.me {
+            text-align: right;
+        }
+
+        .message .sender {
+            font-size: 12px;
+            color: #666;
+        }
+
+        .message .text {
+            display: inline-block;
+            padding: 8px 12px;
+            border-radius: 12px;
+            background: #eee;
+            max-width: 70%;
+        }
+
+        .message.me .text {
+            background: #dcf8c6;
+        }
+
+        .chat-input {
+            display: flex;
+            border-top: 1px solid #ddd;
+        }
+
+        .chat-input input {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            outline: none;
+        }
+
+        .chat-input button {
+            padding: 10px 15px;
+            border: none;
+            background: #4a76a8;
+            color: white;
+            cursor: pointer;
+        }
+
+        .chat-input button:hover {
+            background: #3b5f86;
+        }
+    </style>
+</head>
+<body>
+
+<div class="chat-container">
+    <div class="chat-header">
+        Чат
+    </div>
+
+    <div class="chat-messages" id="chat-messages">
+        <!-- сообщения -->
+    </div>
+
+    <div class="chat-input">
+        <input type="text" id="message-input" placeholder="Введите сообщение">
+        <button onclick="sendMessage()">Отправить</button>
+    </div>
+</div>
+
+<script>
+    const dialogId = {{ dialog.id }};
+    const currentUser = "{{ request.user.username }}";
+
+    const socket = new WebSocket(
+        (window.location.protocol === 'https:' ? 'wss://' : 'ws://')
+        + window.location.host
+        + '/ws/chat/'
+        + dialogId
+        + '/'
+    );
+
+    socket.onmessage = function(e) {
+        const data = JSON.parse(e.data);
+        addMessage(data.sender, data.message);
+    };
+
+    socket.onclose = function() {
+        console.error('WebSocket закрыт');
+    };
+
+    function sendMessage() {
+        const input = document.getElementById('message-input');
+        const message = input.value.trim();
+
+        if (!message) return;
+
+        socket.send(JSON.stringify({
+            message: message
+        }));
+
+        input.value = '';
+    }
+
+    function addMessage(sender, message) {
+        const messagesDiv = document.getElementById('chat-messages');
+
+        const messageDiv = document.createElement('div');
+        messageDiv.classList.add('message');
+
+        if (sender === currentUser) {
+            messageDiv.classList.add('me');
+        }
+
+        messageDiv.innerHTML = `
+            <div class="sender">${sender}</div>
+            <div class="text">${message}</div>
+        `;
+
+        messagesDiv.appendChild(messageDiv);
+        messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    }
+</script>
+
+</body>
+{% endblock %}
