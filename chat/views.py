@@ -1,4 +1,4 @@
-from django.http import HttpResponseForbidden
+from django.http import HttpResponseForbidden, JsonResponse
 from django.shortcuts import redirect, get_object_or_404, render
 from django.contrib.auth.decorators import login_required
 from users.models import CustomUser
@@ -18,8 +18,11 @@ def dialog_view(request, dialog_id):
     dialog = get_object_or_404(Dialog, id=dialog_id)
 
     if request.user not in dialog.users.all():
-        return HttpResponseForbidden()
+        return JsonResponse({'status': 'error', 'message': 'not found or forbidden'}, status=403)
+
+    messages = dialog.messages.select_related('sender').order_by('created_at')
 
     return render(request, 'chat.html', {
-        'dialog': dialog
+        'dialog': dialog,
+        'messages': messages,
     })

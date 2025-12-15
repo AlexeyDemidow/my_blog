@@ -91,7 +91,12 @@
     </div>
 
     <div class="chat-messages" id="chat-messages">
-        <!-- сообщения -->
+        {% for msg in messages %}
+            <div class="message {% if msg.sender == request.user %}me{% endif %}">
+                <div class="sender">{{ msg.sender.username }}</div>
+                <div class="text">{{ msg.text }}</div>
+            </div>
+        {% endfor %}
     </div>
 
     <div class="chat-input">
