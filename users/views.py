@@ -34,8 +34,8 @@ class Login(LoginView):
     """Представление входа в систему"""
 
     form_class = AuthenticationForm
-    success_url_allowed_hosts = reverse_lazy('home')
     template_name = 'login.html'
+    success_url = reverse_lazy('home')
 
 
 class Profile(LoginRequiredMixin, DetailView):
