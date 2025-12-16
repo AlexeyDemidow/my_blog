@@ -575,4 +575,10 @@ button[type="submit"]:hover {
     cursor: pointer;
 }
 
+.options-menu .dropdown {
+    display: none;
+}
 
+.options-menu.active .dropdown {
+    display: block;
+}

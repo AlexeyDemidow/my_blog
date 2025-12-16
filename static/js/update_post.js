@@ -41,33 +41,24 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 });
 
-document.addEventListener("DOMContentLoaded", () => {
-    // Получаем все контейнеры меню
-    const menus = document.querySelectorAll(".options-menu");
+document.addEventListener("click", function (e) {
 
-    menus.forEach(menu => {
-        const btn = menu.querySelector(".options-btn");
-        const dropdown = menu.querySelector(".dropdown");
+    const btn = e.target.closest(".options-btn");
 
-        btn.addEventListener("click", (e) => {
-            e.stopPropagation(); // чтобы клик не закрывал меню сразу
-            // Закрываем все другие открытые меню
-            menus.forEach(m => {
-                const dd = m.querySelector(".dropdown");
-                if (dd !== dropdown) dd.style.display = "none";
-            });
+    if (btn) {
+        e.stopPropagation();
+        const menu = btn.closest(".options-menu");
 
-            // Переключаем текущее меню
-            dropdown.style.display = dropdown.style.display === "block" ? "none" : "block";
+        document.querySelectorAll(".options-menu").forEach(m => {
+            if (m !== menu) m.classList.remove("active");
         });
-    });
 
-    // Закрыть все меню при клике вне
-    document.addEventListener("click", () => {
-        menus.forEach(menu => {
-            const dd = menu.querySelector(".dropdown");
-            dd.style.display = "none";
-        });
+        menu.classList.toggle("active");
+        return;
+    }
+
+    document.querySelectorAll(".options-menu").forEach(m => {
+        m.classList.remove("active");
     });
 });
 
