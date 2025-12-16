@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="chat-list">
+
+    {% if chats %}
+        {% for chat in chats %}
+            {% with companion=chat.companion %}
+                <a href="{% url 'dialog' chat.id %}" class="chat-item">
+
+                    <!-- Аватар -->
+                    <div class="chat-avatar">
+                        {% if companion.avatar %}
+                            <img src="{{ companion.avatar.url }}" alt="{{ companion.username }}">
+                        {% else %}
+                            <div class="avatar-placeholder">
+                                {{ companion.username|first|upper }}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Контент -->
+                    <div class="chat-body">
+                        <div class="chat-header">
+                            <span class="chat-username">
+                                {{ companion.username }}
+                            </span>
+
+                            {% if chat.messages.last %}
+                                <span class="chat-time">
+                                    {{ chat.messages.last.created_at|date:"H:i" }}
+                                </span>
+                            {% endif %}
+                        </div>
+
+                        <div class="chat-preview">
+                            {% if chat.messages.last %}
+                                {% if chat.messages.last.sender == request.user %}
+                                    <span class="you-prefix">Вы:</span>
+                                {% endif %}
+                                {{ chat.messages.last.text|truncatechars:40 }}
+                            {% else %}
+                                <span class="no-messages">Нет сообщений</span>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                </a>
+            {% endwith %}
+        {% endfor %}
+    {% else %}
+        <p class="empty-chat-list">У вас пока нет диалогов</p>
+    {% endif %}
+
+</div>
+
+{% endblock %}

@@ -582,3 +582,70 @@ button[type="submit"]:hover {
 .options-menu.active .dropdown {
     display: block;
 }
+
+
+/*чат*/
+.chat-list {
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.chat-item {
+    display: flex;
+    gap: 12px;
+    padding: 12px;
+    border-radius: 12px;
+    text-decoration: none;
+    color: inherit;
+    transition: background .2s;
+}
+
+.chat-item:hover {
+    background: #f5f5f5;
+}
+
+.chat-avatar img,
+.avatar-placeholder {
+    width: 40px;      /* было 48px */
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+
+.chat-body {
+    flex: 1;
+}
+
+.chat-header {
+    display: flex;
+    justify-content: space-between;
+    font-weight: 600;
+}
+
+.chat-preview {
+    font-size: 14px;
+    color: #666;
+    margin-top: 4px;
+}
+
+.chat-time {
+    font-size: 12px;
+    color: #999;
+}
+
+.you-prefix {
+    font-weight: 600;
+}
+
+.no-messages {
+    font-style: italic;
+    color: #aaa;
+}
+
+.empty-chat-list {
+    text-align: center;
+    color: #999;
+    margin-top: 30px;
+}
+

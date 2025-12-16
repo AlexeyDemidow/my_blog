@@ -6,6 +6,10 @@ class Dialog(models.Model):
     users = models.ManyToManyField(CustomUser, related_name='dialogs')
     created_at = models.DateTimeField(auto_now_add=True)
 
+    @property
+    def companion(self):
+        return self.users.exclude(id=self._current_user.id).first()
+
     def __str__(self):
         return f'Dialog {self.id}'
 
