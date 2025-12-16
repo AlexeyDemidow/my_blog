@@ -60,7 +60,7 @@ class Profile(LoginRequiredMixin, DetailView):
                 'likes',
                 'reposts',
             )
-            .filter(author=self.request.user)
+            .filter(author=user)
             .annotate(
                 likes_count=Count('likes', distinct=True),
                 reposts_count=Count('reposts', distinct=True),

@@ -25,8 +25,7 @@
         <option value="comments" {% if request.GET.sort == 'comments' %}selected{% endif %}>По комментариям</option>
     </select>
 </form>
-
-<div id="posts-container">
-    {% include "partials/post_items.html" %}
-</div>
+    <div id="posts-container">
+        {% include "partials/post_items.html" %}
+    </div>
 {% endblock %}
