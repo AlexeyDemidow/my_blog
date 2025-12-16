@@ -14,6 +14,8 @@
 
     {% if user == c_user %}
         <a href="{% url 'post_create' %}" class="nav-btn">Создать пост</a>
+    {% else %}
+        <a href="{% url 'start_dialog' c_user.id %}" class="nav-btn">Написать</a>
     {% endif %}
     <!-- ЛЕНТА -->
 <form method="get" class="sort-container" style="margin-bottom:15px;">

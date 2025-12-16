@@ -32,7 +32,7 @@ class DialogList(ListView):
 def start_dialog(request, user_id):
     other_user = CustomUser.objects.get(id=user_id)
     dialog = get_or_create_dialog(request.user, other_user)
-    return redirect('chat:dialog', dialog_id=dialog.id)
+    return redirect('dialog', dialog_id=dialog.id)
 
 
 @login_required
