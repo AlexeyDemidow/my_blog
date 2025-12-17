@@ -37,14 +37,16 @@ def start_dialog(request, user_id):
 
 @login_required
 def dialog_view(request, dialog_id):
-    dialog = get_object_or_404(Dialog, id=dialog_id)
+    dialog = Dialog.objects.get(id=dialog_id)
 
-    if request.user not in dialog.users.all():
-        return JsonResponse({'status': 'error', 'message': 'not found or forbidden'}, status=403)
+    # помечаем сообщения как прочитанные
+    dialog.messages.filter(
+        is_read=False
+    ).exclude(sender=request.user).update(is_read=True)
 
-    messages = dialog.messages.select_related('sender').order_by('created_at')
+    messages = dialog.messages.select_related('sender')
 
     return render(request, 'chat.html', {
         'dialog': dialog,
-        'messages': messages,
+        'messages': messages
     })

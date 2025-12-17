@@ -31,6 +31,17 @@ class PrivateChatConsumer(AsyncWebsocketConsumer):
     async def receive(self, text_data):
         data = json.loads(text_data)
 
+        if data.get('type') == 'read_all':
+            await self.mark_messages_as_read()
+            await self.channel_layer.group_send(
+                self.room_group_name,
+                {
+                    'type': 'messages_read',
+                    'reader': self.scope['user'].username
+                }
+            )
+            return
+
         # 🔔 typing indicator
         if data.get('type') == 'typing':
             await self.channel_layer.group_send(
@@ -56,9 +67,10 @@ class PrivateChatConsumer(AsyncWebsocketConsumer):
             self.room_group_name,
             {
                 'type': 'chat_message',
+                'id': message.id,
                 'message': message.text,
                 'sender': user.username,
-                'created_at': message.created_at.isoformat(),
+                'is_read': False,
             }
         )
 
@@ -71,6 +83,9 @@ class PrivateChatConsumer(AsyncWebsocketConsumer):
 
     async def chat_message(self, event):
         # Отправка сообщения клиенту
+        await self.send(text_data=json.dumps(event))
+
+    async def messages_read(self, event):
         await self.send(text_data=json.dumps(event))
 
     # ---------------------------
@@ -99,3 +114,12 @@ class PrivateChatConsumer(AsyncWebsocketConsumer):
 
         # Сравниваем по id, чтобы избежать ленивых ссылок
         return self.scope['user'].id in [u.id for u in dialog.users.all()]
+
+    @database_sync_to_async
+    def mark_messages_as_read(self):
+        from .models import Message
+        Message.objects.filter(
+            dialog_id=self.dialog_id,
+            is_read=False
+        ).exclude(sender=self.scope['user']).update(is_read=True)
+
