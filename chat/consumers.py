@@ -29,18 +29,29 @@ class PrivateChatConsumer(AsyncWebsocketConsumer):
         )
 
     async def receive(self, text_data):
-        # Получаем сообщение от клиента
         data = json.loads(text_data)
+
+        # 🔔 typing indicator
+        if data.get('type') == 'typing':
+            await self.channel_layer.group_send(
+                self.room_group_name,
+                {
+                    'type': 'user_typing',
+                    'username': self.scope['user'].username,
+                    'is_typing': data.get('is_typing', False),
+                }
+            )
+            return
+
+        # ✉️ обычное сообщение
         message_text = data.get('message', '').strip()
         if not message_text:
             return
 
         user = self.scope['user']
 
-        # Сохраняем сообщение в базе
         message = await self.save_message(user.id, message_text)
 
-        # Отправляем сообщение всем в группе
         await self.channel_layer.group_send(
             self.room_group_name,
             {
@@ -50,6 +61,13 @@ class PrivateChatConsumer(AsyncWebsocketConsumer):
                 'created_at': message.created_at.isoformat(),
             }
         )
+
+    async def user_typing(self, event):
+        await self.send(text_data=json.dumps({
+            'type': 'typing',
+            'username': event['username'],
+            'is_typing': event['is_typing'],
+        }))
 
     async def chat_message(self, event):
         # Отправка сообщения клиенту

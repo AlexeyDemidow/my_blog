@@ -81,6 +81,15 @@
         .chat-input button:hover {
             background: #3b5f86;
         }
+
+        .typing-indicator {
+            min-height: 18px;
+            font-size: 13px;
+            color: #888;
+            margin: 0 10px 5px;
+            font-style: italic;
+        }
+
     </style>
 </head>
 <body>
@@ -99,6 +108,8 @@
         {% endfor %}
     </div>
 
+    <div class="typing-indicator" id="typing-indicator"></div>
+
     <div class="chat-input">
         <input type="text" id="message-input" placeholder="Введите сообщение">
         <button onclick="sendMessage()">Отправить</button>
@@ -108,6 +119,11 @@
 <script>
     const dialogId = {{ dialog.id }};
     const currentUser = "{{ request.user.username }}";
+
+    const typingIndicator = document.getElementById('typing-indicator');
+    const input = document.getElementById('message-input');
+
+    let typingTimer = null;
 
     const socket = new WebSocket(
         (window.location.protocol === 'https:' ? 'wss://' : 'ws://')
@@ -119,8 +135,22 @@
 
     socket.onmessage = function(e) {
         const data = JSON.parse(e.data);
-        addMessage(data.sender, data.message);
+
+        // ✍️ typing indicator
+        if (data.type === 'typing' && data.username !== currentUser) {
+            typingIndicator.textContent = data.is_typing
+                ? `${data.username} печатает...`
+                : '';
+            return;
+        }
+
+        // ✉️ обычное сообщение
+        if (data.message) {
+            typingIndicator.textContent = '';
+            addMessage(data.sender, data.message);
+        }
     };
+
 
     socket.onclose = function() {
         console.error('WebSocket закрыт');
@@ -131,6 +161,7 @@
         const message = input.value.trim();
 
         if (!message) return;
+        typingIndicator.textContent = '';
 
         socket.send(JSON.stringify({
             message: message
@@ -157,6 +188,22 @@
         messagesDiv.appendChild(messageDiv);
         messagesDiv.scrollTop = messagesDiv.scrollHeight;
     }
+
+    input.addEventListener('input', () => {
+        socket.send(JSON.stringify({
+            type: 'typing',
+            is_typing: true
+        }));
+
+        clearTimeout(typingTimer);
+        typingTimer = setTimeout(() => {
+            socket.send(JSON.stringify({
+                type: 'typing',
+                is_typing: false
+            }));
+        }, 1200);
+    });
+
 </script>
 
 </body>
