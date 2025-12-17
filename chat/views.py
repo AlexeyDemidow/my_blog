@@ -1,12 +1,13 @@
-from django.db.models import Max
+from django.db.models import Max, Count, Q, OuterRef, Subquery
 from django.http import HttpResponseForbidden, JsonResponse
 from django.shortcuts import redirect, get_object_or_404, render
 from django.contrib.auth.decorators import login_required
 from django.views.generic import ListView
 
 from users.models import CustomUser
-from .models import Dialog
+from .models import Dialog, Message
 from .services import get_or_create_dialog
+
 
 
 class DialogList(ListView):
@@ -15,15 +16,32 @@ class DialogList(ListView):
     template_name = 'chat_list.html'
 
     def get_queryset(self):
+        user = self.request.user
+
+        last_message_subquery = Message.objects.filter(
+            dialog=OuterRef('pk')
+        ).order_by('-created_at')
+
         qs = (
             Dialog.objects
-            .filter(users=self.request.user)
-            .prefetch_related('users', 'messages')
+            .filter(users=user)
+            .annotate(
+                last_message_text=Subquery(last_message_subquery.values('text')[:1]),
+                last_message_time=Subquery(last_message_subquery.values('created_at')[:1]),
+                unread_count=Count(
+                    'messages',
+                    filter=Q(
+                        messages__is_read=False
+                    ) & ~Q(
+                        messages__sender=user
+                    )
+                )
+            )
+            .prefetch_related('users')
         )
 
-        # 🔥 прокидываем текущего пользователя в каждый объект
         for dialog in qs:
-            dialog._current_user = self.request.user
+            dialog._current_user = user
 
         return qs
 
