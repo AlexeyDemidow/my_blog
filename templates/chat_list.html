@@ -104,6 +104,12 @@
     justify-content: center;
     margin-left: 8px;
 }
+
+.chat-preview.typing {
+    color: #4a76a8;
+    font-style: italic;
+}
+
 </style>
 
 <div class="chat-list">
@@ -144,7 +150,8 @@
                 </div>
 
 
-                <div class="chat-preview" id="chat-preview-{{ chat.id }}">
+
+                <div class="chat-preview" id="chat-preview-{{ chat.id }}" data-last-message="{% if chat.messages.last %}{{ chat.messages.last.text|truncatechars:40 }}{% endif %}">
                     {% if chat.messages.last %}
                         {% if chat.messages.last.sender == request.user %}
                             <span class="you-prefix">Вы:</span>
@@ -185,25 +192,51 @@ socket.onmessage = function(e) {
 
     if (!chatItem) return;
 
-    let badge = chatItem.querySelector('.unread-badge');
+    const preview = chatItem.querySelector('.chat-preview');
 
-    if (!badge) {
-        badge = document.createElement('span');
-        badge.className = 'unread-badge';
-        badge.textContent = '1';
-        chatItem.querySelector('.chat-header').appendChild(badge);
-    } else {
-        badge.textContent = parseInt(badge.textContent) + 1;
+    /* =======================
+       ✍️ TYPING
+    ======================= */
+    if (data.type === 'chat_typing') {
+        if (data.is_typing) {
+            preview.textContent = 'печатает…';
+            preview.classList.add('typing');
+        } else {
+            preview.textContent = preview.dataset.lastMessage || '';
+            preview.classList.remove('typing');
+        }
+        return; // ⛔ ВАЖНО
     }
 
-    // обновляем превью
-    chatItem.querySelector('.chat-preview').textContent =
-        `${data.sender}: ${data.message}`;
+    /* =======================
+       ✉️ NEW MESSAGE
+    ======================= */
+    if (data.type === 'new_message') {
 
-    // поднимаем чат вверх
-    chatItem.parentNode.prepend(chatItem);
+        // unread badge
+        let badge = chatItem.querySelector('.unread-badge');
+
+        if (!badge) {
+            badge = document.createElement('span');
+            badge.className = 'unread-badge';
+            badge.textContent = '1';
+            chatItem.querySelector('.chat-header').appendChild(badge);
+        } else {
+            badge.textContent = parseInt(badge.textContent) + 1;
+        }
+
+        // обновляем превью
+        const text = `${data.sender}: ${data.message}`;
+        preview.textContent = text;
+        preview.dataset.lastMessage = text;
+        preview.classList.remove('typing');
+
+        // поднимаем чат вверх
+        chatItem.parentNode.prepend(chatItem);
+    }
 };
 </script>
+
 
 
 

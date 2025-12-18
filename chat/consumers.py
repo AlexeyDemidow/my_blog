@@ -42,16 +42,9 @@ class PrivateChatConsumer(AsyncWebsocketConsumer):
             )
             return
 
-        # 🔔 typing indicator
+        # 🔔 typing
         if data.get('type') == 'typing':
-            await self.channel_layer.group_send(
-                self.room_group_name,
-                {
-                    'type': 'user_typing',
-                    'username': self.scope['user'].username,
-                    'is_typing': data.get('is_typing', False),
-                }
-            )
+            await self.handle_typing(data)
             return
 
         # ✉️ обычное сообщение
@@ -102,6 +95,38 @@ class PrivateChatConsumer(AsyncWebsocketConsumer):
 
     async def messages_read(self, event):
         await self.send(text_data=json.dumps(event))
+
+    async def chat_typing(self, event):
+        await self.send(text_data=json.dumps(event))
+
+    async def handle_typing(self, data):
+        username = self.scope['user'].username
+        is_typing = data.get('is_typing', False)
+
+        # typing в диалоге
+        await self.channel_layer.group_send(
+            self.room_group_name,
+            {
+                'type': 'user_typing',
+                'username': username,
+                'is_typing': is_typing,
+            }
+        )
+
+        # typing в списке бесед
+        dialog_users = await self.get_dialog_users()
+
+        for user_id in dialog_users:
+            if user_id != self.scope['user'].id:
+                await self.channel_layer.group_send(
+                    f'user_{user_id}',
+                    {
+                        'type': 'chat_typing',
+                        'dialog_id': self.dialog_id,
+                        'username': username,
+                        'is_typing': is_typing
+                    }
+                )
 
     # ---------------------------
     # Работа с базой данных
@@ -168,3 +193,11 @@ class ChatListConsumer(AsyncWebsocketConsumer):
 
     async def chat_notification(self, event):
         await self.send(text_data=json.dumps(event))
+
+    async def chat_typing(self, event):
+        await self.send(text_data=json.dumps({
+            'type': 'chat_typing',
+            'dialog_id': event['dialog_id'],
+            'username': event['username'],
+            'is_typing': event['is_typing']
+        }))
