@@ -49,6 +49,15 @@ class PrivateChatConsumer(AsyncWebsocketConsumer):
 
             for user_id in dialog_users:
                 if user_id != self.scope['user'].id:
+                    # 🔹 1. В ОТКРЫТЫЙ ДИАЛОГ
+                    await self.channel_layer.group_send(
+                        self.room_group_name,
+                        {
+                            'type': 'messages_read',
+                        }
+                    )
+
+                    # 🔹 2. В СПИСОК ЧАТОВ
                     await self.channel_layer.group_send(
                         f'user_{user_id}',
                         {
@@ -108,6 +117,7 @@ class PrivateChatConsumer(AsyncWebsocketConsumer):
                 'id': message.id,
                 'message': message.text,
                 'sender': user.username,
+                'sender_id': user.id,
                 'is_read': False,
             }
         )
@@ -119,9 +129,34 @@ class PrivateChatConsumer(AsyncWebsocketConsumer):
             'is_typing': event['is_typing'],
         }))
 
+    # async def chat_message(self, event):
+    #     # Отправка сообщения клиенту
+    #     await self.send(text_data=json.dumps(event))
+
     async def chat_message(self, event):
-        # Отправка сообщения клиенту
         await self.send(text_data=json.dumps(event))
+
+        # 🔥 если сообщение пришло НЕ от меня — читаем сразу
+        if event.get('sender_id') != self.scope['user'].id:
+            # отмечаем сообщение прочитанным
+            await self.mark_message_read(event['id'])
+
+            # уведомляем отправителя
+            await self.channel_layer.group_send(
+                self.room_group_name,
+                {
+                    'type': 'messages_read',
+                }
+            )
+
+            # и список чатов
+            await self.channel_layer.group_send(
+                f'user_{event["sender_id"]}',
+                {
+                    'type': 'messages_read',
+                    'dialog_id': self.dialog_id
+                }
+            )
 
     async def messages_read(self, event):
         await self.send(text_data=json.dumps(event))
@@ -192,6 +227,11 @@ class PrivateChatConsumer(AsyncWebsocketConsumer):
             dialog_id=self.dialog_id,
             is_read=False
         ).exclude(sender=self.scope['user']).update(is_read=True)
+
+    @database_sync_to_async
+    def mark_message_read(self, message_id):
+        from .models import Message
+        Message.objects.filter(id=message_id).update(is_read=True)
 
     @database_sync_to_async
     def get_dialog_users(self):
