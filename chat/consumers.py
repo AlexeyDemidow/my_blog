@@ -31,16 +31,45 @@ class PrivateChatConsumer(AsyncWebsocketConsumer):
     async def receive(self, text_data):
         data = json.loads(text_data)
 
+        # if data.get('type') == 'read_all':
+        #     await self.mark_messages_as_read()
+        #     await self.channel_layer.group_send(
+        #         self.room_group_name,
+        #         {
+        #             'type': 'messages_read',
+        #             'reader': self.scope['user'].username
+        #         }
+        #     )
+        #     return
+
         if data.get('type') == 'read_all':
             await self.mark_messages_as_read()
-            await self.channel_layer.group_send(
-                self.room_group_name,
-                {
-                    'type': 'messages_read',
-                    'reader': self.scope['user'].username
-                }
-            )
+
+            dialog_users = await self.get_dialog_users()
+
+            for user_id in dialog_users:
+                if user_id != self.scope['user'].id:
+                    await self.channel_layer.group_send(
+                        f'user_{user_id}',
+                        {
+                            'type': 'messages_read',
+                            'dialog_id': self.dialog_id
+                        }
+                    )
+
             return
+
+        dialog_users = await self.get_dialog_users()
+
+        for user_id in dialog_users:
+            if user_id != self.scope['user'].id:
+                await self.channel_layer.group_send(
+                    f'user_{user_id}',
+                    {
+                        'type': 'messages_read',
+                        'dialog_id': self.dialog_id
+                    }
+                )
 
         # 🔔 typing
         if data.get('type') == 'typing':
@@ -64,10 +93,11 @@ class PrivateChatConsumer(AsyncWebsocketConsumer):
                 await self.channel_layer.group_send(
                     f'user_{user_id}',
                     {
-                        'type': 'chat_notification',
+                        'type': 'new_message',
                         'dialog_id': self.dialog_id,
                         'message': message.text,
-                        'sender': user.username
+                        'sender': user.username,
+                        'from_me': False
                     }
                 )
 
@@ -191,8 +221,8 @@ class ChatListConsumer(AsyncWebsocketConsumer):
             self.group_name,
             self.channel_name)
 
-    async def chat_notification(self, event):
-        await self.send(text_data=json.dumps(event))
+    # async def chat_notification(self, event):
+    #     await self.send(text_data=json.dumps(event))
 
     async def chat_typing(self, event):
         await self.send(text_data=json.dumps({
@@ -200,4 +230,25 @@ class ChatListConsumer(AsyncWebsocketConsumer):
             'dialog_id': event['dialog_id'],
             'username': event['username'],
             'is_typing': event['is_typing']
+        }))
+
+    async def new_message(self, event):
+        await self.send(text_data=json.dumps({
+            'type': 'new_message',
+            'dialog_id': event['dialog_id'],
+            'message': event['message'],
+            'sender': event['sender'],
+            'from_me': False
+        }))
+
+    # async def messages_read_list(self, event):
+    #     await self.send(text_data=json.dumps({
+    #         'type': 'messages_read',
+    #         'dialog_id': event['dialog_id']
+    #     }))
+
+    async def messages_read(self, event):
+        await self.send(text_data=json.dumps({
+            'type': 'messages_read',
+            'dialog_id': event['dialog_id']
         }))

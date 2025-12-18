@@ -110,6 +110,12 @@
     font-style: italic;
 }
 
+.read-status {
+    margin-right: 4px;
+    color: #4a76a8;
+    font-size: 13px;
+}
+
 </style>
 
 <div class="chat-list">
@@ -151,18 +157,28 @@
 
 
 
-                <div class="chat-preview" id="chat-preview-{{ chat.id }}" data-last-message="{% if chat.messages.last %}{{ chat.messages.last.text|truncatechars:40 }}{% endif %}">
+                <div class="chat-preview" id="chat-preview-{{ chat.id }}"
+                     data-last-message="{% if chat.messages.last %}{{ chat.messages.last.text|truncatechars:40 }}{% endif %}"
+                >
                     {% if chat.messages.last %}
                         {% if chat.messages.last.sender == request.user %}
-                            <span class="you-prefix">Вы:</span>
+                            <span class="read-status">
+                                {% if chat.messages.last.is_read %}
+                                    ✔✔
+                                {% else %}
+                                    ✔
+                                {% endif %}
+                            </span>
+                            {{ chat.messages.last.text|truncatechars:40 }}
                         {% else %}
                             {{ chat.messages.last.sender.username }}:
+                            {{ chat.messages.last.text|truncatechars:40 }}
                         {% endif %}
-                        {{ chat.messages.last.text|truncatechars:40 }}
                     {% else %}
                         <span class="no-messages">Нет сообщений</span>
                     {% endif %}
                 </div>
+
 
 
             </div>
@@ -189,10 +205,26 @@ socket.onmessage = function(e) {
     const chatItem = document.querySelector(
         `.chat-item[data-dialog-id="${data.dialog_id}"]`
     );
-
     if (!chatItem) return;
 
     const preview = chatItem.querySelector('.chat-preview');
+
+    /* =======================
+       ✔✔ ПРОЧИТАНО
+    ======================= */
+    if (data.type === 'messages_read') {
+
+        // удаляем badge
+        const badge = chatItem.querySelector('.unread-badge');
+        if (badge) badge.remove();
+
+        // меняем ✔ → ✔✔
+        const status = preview.querySelector('.read-status');
+        if (status) {
+            status.textContent = '✔✔';
+        }
+        return;
+    }
 
     /* =======================
        ✍️ TYPING
@@ -205,7 +237,7 @@ socket.onmessage = function(e) {
             preview.textContent = preview.dataset.lastMessage || '';
             preview.classList.remove('typing');
         }
-        return; // ⛔ ВАЖНО
+        return;
     }
 
     /* =======================
@@ -213,9 +245,8 @@ socket.onmessage = function(e) {
     ======================= */
     if (data.type === 'new_message') {
 
-        // unread badge
+        // badge
         let badge = chatItem.querySelector('.unread-badge');
-
         if (!badge) {
             badge = document.createElement('span');
             badge.className = 'unread-badge';
@@ -225,17 +256,18 @@ socket.onmessage = function(e) {
             badge.textContent = parseInt(badge.textContent) + 1;
         }
 
-        // обновляем превью
+        // превью
         const text = `${data.sender}: ${data.message}`;
         preview.textContent = text;
         preview.dataset.lastMessage = text;
         preview.classList.remove('typing');
 
-        // поднимаем чат вверх
+        // поднимаем чат
         chatItem.parentNode.prepend(chatItem);
     }
 };
 </script>
+
 
 
 
