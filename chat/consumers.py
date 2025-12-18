@@ -63,6 +63,21 @@ class PrivateChatConsumer(AsyncWebsocketConsumer):
 
         message = await self.save_message(user.id, message_text)
 
+        # уведомляем второго участника
+        dialog_users = await self.get_dialog_users()
+
+        for user_id in dialog_users:
+            if user_id != user.id:
+                await self.channel_layer.group_send(
+                    f'user_{user_id}',
+                    {
+                        'type': 'chat_notification',
+                        'dialog_id': self.dialog_id,
+                        'message': message.text,
+                        'sender': user.username
+                    }
+                )
+
         await self.channel_layer.group_send(
             self.room_group_name,
             {
@@ -123,3 +138,33 @@ class PrivateChatConsumer(AsyncWebsocketConsumer):
             is_read=False
         ).exclude(sender=self.scope['user']).update(is_read=True)
 
+    @database_sync_to_async
+    def get_dialog_users(self):
+        from .models import Dialog
+        dialog = Dialog.objects.get(id=self.dialog_id)
+        return list(dialog.users.values_list('id', flat=True))
+
+
+class ChatListConsumer(AsyncWebsocketConsumer):
+    async def connect(self):
+        user = self.scope['user']
+        if user.is_anonymous:
+            await self.close()
+            return
+
+        self.group_name = f'user_{user.id}'
+
+        await self.channel_layer.group_add(
+            self.group_name,
+            self.channel_name
+        )
+
+        await self.accept()
+
+    async def disconnect(self, close_code):
+        await self.channel_layer.group_discard(
+            self.group_name,
+            self.channel_name)
+
+    async def chat_notification(self, event):
+        await self.send(text_data=json.dumps(event))

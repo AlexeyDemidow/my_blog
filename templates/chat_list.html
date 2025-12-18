@@ -111,8 +111,7 @@
 {% if chats %}
     {% for chat in chats %}
         {% with companion=chat.companion %}
-        <a href="{% url 'dialog' chat.id %}" class="chat-item">
-
+        <a href="{% url 'dialog' chat.id %}" class="chat-item" data-dialog-id="{{ chat.id }}">
             <!-- Аватар -->
             <div class="chat-avatar">
                 {% if companion.avatar %}
@@ -144,6 +143,7 @@
                     {% endif %}
                 </div>
 
+
                 <div class="chat-preview" id="chat-preview-{{ chat.id }}">
                     {% if chat.messages.last %}
                         {% if chat.messages.last.sender == request.user %}
@@ -171,34 +171,40 @@
 </div>
 
 <script>
-const chatListSocket = new WebSocket(
-    `ws://${window.location.host}/ws/chat_list/`
+const socket = new WebSocket(
+    (location.protocol === 'https:' ? 'wss://' : 'ws://')
+    + location.host + '/ws/chat_list/'
 );
 
-chatListSocket.onmessage = function(event) {
-    const data = JSON.parse(event.data);
+socket.onmessage = function(e) {
+    const data = JSON.parse(e.data);
 
-    // Обновляем бейдж
-    const badge = document.querySelector(`#unread-badge-${data.dialog_id}`);
-    if (badge) {
-        badge.textContent = data.unread_count;
-        badge.style.display = data.unread_count > 0 ? 'flex' : 'none';
+    const chatItem = document.querySelector(
+        `.chat-item[data-dialog-id="${data.dialog_id}"]`
+    );
+
+    if (!chatItem) return;
+
+    let badge = chatItem.querySelector('.unread-badge');
+
+    if (!badge) {
+        badge = document.createElement('span');
+        badge.className = 'unread-badge';
+        badge.textContent = '1';
+        chatItem.querySelector('.chat-header').appendChild(badge);
+    } else {
+        badge.textContent = parseInt(badge.textContent) + 1;
     }
 
-    // Обновляем текст последнего сообщения
-    const preview = document.querySelector(`#chat-preview-${data.dialog_id}`);
-    if (preview) {
-        let prefix = "";
-        if (data.sender === "{{ request.user.username }}") {
-            prefix = "Вы: ";
-        } else if (data.sender) {
-            prefix = data.sender + ": ";
-        }
+    // обновляем превью
+    chatItem.querySelector('.chat-preview').textContent =
+        `${data.sender}: ${data.message}`;
 
-        preview.textContent = prefix + (data.last_message || "");
-    }
+    // поднимаем чат вверх
+    chatItem.parentNode.prepend(chatItem);
 };
 </script>
+
 
 
 
