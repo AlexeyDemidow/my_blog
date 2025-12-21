@@ -1,4 +1,17 @@
 <div class="post-left">
+
+    {% if user.is_authenticated and user == post.author %}
+        <div class="options-menu" data-post-id="{{ post.id }}">
+            <button class="options-btn">⋮</button>
+            <div class="dropdown">
+                <a href="{% url 'post_update' post.id %}">Изменить пост</a>
+                <button class="del-post-btn" data-post-id="{{ post.id }}">
+                    Удалить пост
+                </button>
+            </div>
+        </div>
+    {% endif %}
+
     {% if post.original_post %}
         <!-- 🔁 Репост -->
         <p style="color:green;">
@@ -69,12 +82,6 @@
     {% endif %}
 
     <span id="modal-repost-count-{{ post.id }}">{{ post.reposts.count }}</span>
-
-    {% if user.is_authenticated and user == post.author %}
-        <button class="del-post-btn" data-post-id="{{ post.id }}">
-            <i class="fa-regular fa-trash-can"></i>
-        </button>
-    {% endif %}
 
 </div>
 

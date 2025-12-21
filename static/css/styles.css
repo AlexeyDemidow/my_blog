@@ -515,7 +515,7 @@ button[type="submit"]:hover {
 /*Меню опций поста*/
 /* Контейнер меню */
 .options-menu {
-    position: relative;
+    position: absolute;
     display: inline-block;
 }
 
