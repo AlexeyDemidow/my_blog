@@ -66,7 +66,7 @@ $(document).on('click', '.modal-comment-btn', function(event) {
                 // $('#comments-list-' + postId).prepend(commentHtml);
                 $('#modal-comments-list-' + postId).prepend(commentHtml);
 
-                $('#comment-count').text(data.comment_count);
+                $(`#comment-count-${postId}`).text(data.comment_count);
                 $('#modal-comment-count').text(data.comment_count);
 
                 // Очищаем поле ввода

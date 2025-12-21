@@ -1,4 +1,4 @@
-$(document).on('click', '.del-comment-btn, .modal-del-comment-btn', function(event) {
+$(document).on('click', '.modal-del-comment-btn', function(event) {
     event.preventDefault();
     const commentId = $(this).data('comment-id');
     const csrf = getCookie('csrftoken');
@@ -13,6 +13,9 @@ $(document).on('click', '.del-comment-btn, .modal-del-comment-btn', function(eve
                 // Удаляем комментарий без перезагрузки
                 $(`#comment-${commentId}`).remove();
                 $(`#modal-comment-${commentId}`).remove();
+
+                $(`#comment-count-${data.post_id}`).text(data.comment_count);
+                $('#modal-comment-count').text(data.comment_count);
             } else {
                 alert('Ошибка удаления комментария');
             }

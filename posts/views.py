@@ -345,13 +345,16 @@ def del_comment(request, pk):
         id=pk,
         user=request.user
     ).first()
-
     if not comment:
         return JsonResponse({'status': 'error', 'message': 'not found or forbidden'}, status=403)
 
     comment.delete()
 
-    return JsonResponse({'status': 'success'})
+    return JsonResponse({
+        'status': 'success',
+        'comment_count': comment.post.comments.count(),
+        'post_id': comment.post.id
+    })
 
 
 def pag_posts(request):

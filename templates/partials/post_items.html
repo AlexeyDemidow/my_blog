@@ -78,7 +78,7 @@
 
         <!-- Счетчик комментариев -->
         <i class="fa-regular fa-comment"></i>
-        <span id="comment-count">{{ post.comments.count }}</span>
+        <span id="comment-count-{{ post.id }}" data-post-id="{{ post.id }}">{{ post.comments.count }}</span>
 
         <!-- Репосты -->
         {% if not post.original_post %}
