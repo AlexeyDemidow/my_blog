@@ -105,6 +105,9 @@
             <div class="message {% if msg.sender == request.user %}me{% endif %}">
                 <div class="text">
                     {{ msg.text }}
+                    <span class="chat-time">
+                        {{ msg.created_at }}
+                    </span>
                     {% if msg.sender == request.user %}
                         <span class="read-status">
                             {% if msg.is_read %}✔✔{% else %}✔{% endif %}
