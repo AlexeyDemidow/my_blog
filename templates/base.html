@@ -116,5 +116,61 @@
     margin-bottom: 0 !important;
 }
 </style>
+
+<script>
+const onlineSocket = new WebSocket(
+    (location.protocol === 'https:' ? 'wss://' : 'ws://')
+    + location.host + '/ws/online/'
+);
+
+window.ONLINE_USERS = new Set();
+
+function updateOnlineStatus(userId, isOnline) {
+    document
+        .querySelectorAll(`[data-user-id="${userId}"]`)
+        .forEach(el => {
+            el.classList.toggle('online', isOnline);
+        });
+
+    if (isOnline) {
+        window.ONLINE_USERS.add(userId);
+    } else {
+        window.ONLINE_USERS.delete(userId);
+    }
+}
+
+onlineSocket.onmessage = function(e) {
+    const data = JSON.parse(e.data);
+
+    if (data.type === 'online_users') {
+        data.users.forEach(userId => {
+            updateOnlineStatus(userId, true);
+        });
+        return;
+    }
+
+    if (data.type === 'user_online') {
+        updateOnlineStatus(data.user_id, true);
+    }
+
+    if (data.type === 'user_offline') {
+        updateOnlineStatus(data.user_id, false);
+    }
+};
+
+// 🔥 ДЛЯ МОДАЛОК / AJAX
+window.syncOnlineStatus = function () {
+    document.querySelectorAll('[data-user-id]').forEach(el => {
+        const userId = parseInt(el.dataset.userId);
+        if (window.ONLINE_USERS.has(userId)) {
+            el.classList.add('online');
+        }
+    });
+};
+
+
+</script>
+
+
 </body>
 </html>

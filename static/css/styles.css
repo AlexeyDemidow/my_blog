@@ -649,3 +649,18 @@ button[type="submit"]:hover {
     margin-top: 30px;
 }
 
+
+
+
+.online-dot {
+    width: 10px;
+    height: 10px;
+    background: #bbb;
+    border-radius: 50%;
+    display: inline-block;
+    margin-left: 6px;
+    }
+
+.online-dot.online {
+    background: #4caf50;
+}

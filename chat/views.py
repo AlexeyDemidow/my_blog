@@ -39,7 +39,6 @@ class DialogList(ListView):
             )
             .prefetch_related('users')
         )
-
         for dialog in qs:
             dialog._current_user = user
 
@@ -56,7 +55,6 @@ def start_dialog(request, user_id):
 @login_required
 def dialog_view(request, dialog_id):
     dialog = Dialog.objects.get(id=dialog_id)
-
     # помечаем сообщения как прочитанные
     dialog.messages.filter(
         is_read=False

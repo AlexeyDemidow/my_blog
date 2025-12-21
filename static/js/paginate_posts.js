@@ -18,6 +18,7 @@ function loadMorePosts() {
             if (hasNext) nextPage = data.next_page;
 
             loading = false;
+            syncOnlineStatus();
         });
 }
 

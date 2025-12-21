@@ -4,6 +4,7 @@
 {% block title %}Профиль{% endblock %}
 
 {% block content %}
+    <span class="online-dot" data-user-id="{{ c_user.id }}"></span>
     <!-- Информация о пользователе -->
     <div class="form">
         <p><img src="{{ c_user.avatar.url }}" alt="Аватар" class="round"></p>

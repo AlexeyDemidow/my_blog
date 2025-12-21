@@ -27,6 +27,9 @@
 
                 {% with orig=post.original_post %}
                     <div class="repost-box" style="border:1px solid #ccc; padding:10px; border-radius:10px;">
+
+                    <span class="online-dot" data-user-id="{{ orig.author.id }}"></span>
+
                         <p>
                             <img src="{{ orig.author.avatar.url }}" class="round" style="width:40px;height:40px;">
                         </p>
@@ -45,6 +48,8 @@
 
             {% else %}
                 <!-- Обычный пост -->
+                <span class="online-dot" data-user-id="{{ post.author.id }}"></span>
+
                 <p><img src="{{ post.author.avatar.url }}" alt="Аватар" class="round"></p>
                 <h3>
                     <a href="{% url 'profile' post.author.id %}">{{ post.author.username }}</a>

@@ -10,6 +10,7 @@ document.addEventListener("click", function(e) {
             .then(html => {
                 document.getElementById("post-modal-body").innerHTML = html;
                 document.getElementById("post-modal").style.display = "block";
+                syncOnlineStatus();
             });
     }
 

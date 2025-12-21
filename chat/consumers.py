@@ -1,6 +1,7 @@
 import json
 from channels.generic.websocket import AsyncWebsocketConsumer
 from channels.db import database_sync_to_async
+from django.core.cache import cache
 
 
 class PrivateChatConsumer(AsyncWebsocketConsumer):
@@ -292,3 +293,79 @@ class ChatListConsumer(AsyncWebsocketConsumer):
             'type': 'messages_read',
             'dialog_id': event['dialog_id']
         }))
+
+
+ONLINE_USERS_KEY = 'online_users'
+
+class OnlineStatusConsumer(AsyncWebsocketConsumer):
+
+    async def connect(self):
+        user = self.scope['user']
+        if user.is_anonymous:
+            await self.close()
+            return
+
+        self.user = user
+        self.group_name = 'online_users'
+        self.cache_key = f'online_count_{user.id}'
+
+        await self.channel_layer.group_add(
+            self.group_name,
+            self.channel_name
+        )
+        await self.accept()
+
+        # ⬇счётчик подключений
+        count = cache.get(self.cache_key, 0) + 1
+        cache.set(self.cache_key, count)
+
+        # ⬇️ если первое подключение
+        if count == 1:
+            online_users = set(cache.get(ONLINE_USERS_KEY, []))
+            online_users.add(user.id)
+            cache.set(ONLINE_USERS_KEY, list(online_users))
+
+            await self.channel_layer.group_send(
+                self.group_name,
+                {
+                    'type': 'user_online',
+                    'user_id': user.id,
+                }
+            )
+
+        # отправляем текущий online-список НОВОМУ клиенту
+        await self.send(text_data=json.dumps({
+            'type': 'online_users',
+            'users': cache.get(ONLINE_USERS_KEY, [])
+        }))
+
+    async def disconnect(self, close_code):
+        count = cache.get(self.cache_key, 1) - 1
+
+        if count <= 0:
+            cache.delete(self.cache_key)
+
+            online_users = set(cache.get(ONLINE_USERS_KEY, []))
+            online_users.discard(self.user.id)
+            cache.set(ONLINE_USERS_KEY, list(online_users))
+
+            await self.channel_layer.group_send(
+                self.group_name,
+                {
+                    'type': 'user_offline',
+                    'user_id': self.user.id,
+                }
+            )
+        else:
+            cache.set(self.cache_key, count)
+
+        await self.channel_layer.group_discard(
+            self.group_name,
+            self.channel_name
+        )
+
+    async def user_online(self, event):
+        await self.send(text_data=json.dumps(event))
+
+    async def user_offline(self, event):
+        await self.send(text_data=json.dumps(event))
