@@ -1,3 +1,4 @@
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Max, Count, Q, OuterRef, Subquery
 from django.http import HttpResponseForbidden, JsonResponse
 from django.shortcuts import redirect, get_object_or_404, render
@@ -10,7 +11,7 @@ from .services import get_or_create_dialog
 
 
 
-class DialogList(ListView):
+class DialogList(LoginRequiredMixin, ListView):
     model = Dialog
     context_object_name = 'chats'
     template_name = 'chat_list.html'
