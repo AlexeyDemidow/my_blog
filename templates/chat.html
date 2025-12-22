@@ -93,6 +93,19 @@
     .chat-input button:hover {
         background: #3b5f86;
     }
+
+
+    #emoji-panel .emoji {
+        cursor: pointer;
+        font-size: 24px;
+        margin: 5px;
+        transition: transform 0.2s;
+    }
+
+    #emoji-panel .emoji:hover {
+        transform: scale(1.3);
+    }
+
 </style>
 
 <div class="chat-container">
@@ -123,7 +136,22 @@
     <div class="chat-input">
         <input type="text" id="message-input" placeholder="Введите сообщение">
         <button id="send-btn">Отправить</button>
+        <button id="emoji-btn" type="button">😀</button>
     </div>
+
+    <!-- Панель с эмодзи -->
+    <div id="emoji-panel" style="display:none; position:absolute; bottom:60px; left:10px; background:#fff; border:1px solid #ddd; padding:10px; border-radius:8px; max-width: 300px; flex-wrap: wrap;">
+        <span class="emoji">😀</span>
+        <span class="emoji">😂</span>
+        <span class="emoji">😍</span>
+        <span class="emoji">😎</span>
+        <span class="emoji">😢</span>
+        <span class="emoji">👍</span>
+        <span class="emoji">🎉</span>
+        <span class="emoji">❤️</span>
+        <!-- Добавь любые нужные эмодзи -->
+    </div>
+
 </div>
 
 <script>
@@ -238,5 +266,23 @@
 
     // Скроллим сразу после загрузки страницы
     scrollToBottom();
+
+    const emojiBtn = document.getElementById('emoji-btn');
+    const emojiPanel = document.getElementById('emoji-panel');
+    const messageInput = document.getElementById('message-input');
+
+    // открытие/закрытие панели эмодзи
+    emojiBtn.addEventListener('click', () => {
+        emojiPanel.style.display = emojiPanel.style.display === 'none' ? 'flex' : 'none';
+    });
+
+    // вставка эмодзи в input
+    emojiPanel.querySelectorAll('.emoji').forEach(el => {
+        el.addEventListener('click', () => {
+            messageInput.value += el.textContent; // добавляем в конец текста
+            messageInput.focus();
+        });
+    });
+
 </script>
 {% endblock %}
