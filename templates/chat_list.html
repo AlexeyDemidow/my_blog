@@ -217,7 +217,11 @@ socket.onmessage = function(e) {
         const badge = chatItem.querySelector('.unread-badge');
         if (badge) badge.remove();
 
-        // меняем ✔ → ✔✔
+        // удаляем точку (dot)
+        const dot = chatItem.querySelector('.online-dot');
+        if (dot) dot.remove();
+
+        // меняем ✔ → ✔✔ в превью, если сообщение своё
         const status = preview.querySelector('.read-status');
         if (status) {
             status.textContent = '✔✔';

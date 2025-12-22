@@ -143,9 +143,23 @@
 
     let typingTimer = null;
 
-    socket.onopen = function () {
-        socket.send(JSON.stringify({ type: 'read_all' }));
-    };
+// После подключения WebSocket в диалоге
+    socket.onopen = function() {
+        // Отмечаем все сообщения как прочитанные сразу
+        socket.send(JSON.stringify({
+            type: 'messages_read',
+            dialog_id: dialogId
+        }));
+
+        // Локально убираем метку
+        if (window.UNREAD_CHATS) {
+            delete window.UNREAD_CHATS[dialogId];
+            localStorage.setItem('UNREAD_CHATS', JSON.stringify(window.UNREAD_CHATS));
+            // Обновляем точку в шапке
+            if (typeof updateHeaderDot === 'function') updateHeaderDot();
+        }
+    }
+
 
     socket.onmessage = function (e) {
         const data = JSON.parse(e.data);

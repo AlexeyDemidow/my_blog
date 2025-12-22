@@ -32,33 +32,20 @@ class PrivateChatConsumer(AsyncWebsocketConsumer):
     async def receive(self, text_data):
         data = json.loads(text_data)
 
-        # if data.get('type') == 'read_all':
-        #     await self.mark_messages_as_read()
-        #     await self.channel_layer.group_send(
-        #         self.room_group_name,
-        #         {
-        #             'type': 'messages_read',
-        #             'reader': self.scope['user'].username
-        #         }
-        #     )
-        #     return
-
-        if data.get('type') == 'read_all':
+        # ✅ 1. ЧТЕНИЕ (ТОЛЬКО ТУТ)
+        if data.get('type') == 'messages_read':
             await self.mark_messages_as_read()
 
-            dialog_users = await self.get_dialog_users()
+            await self.channel_layer.group_send(
+                self.room_group_name,
+                {
+                    'type': 'messages_read',
+                    'dialog_id': self.dialog_id
+                }
+            )
 
-            for user_id in dialog_users:
+            for user_id in await self.get_dialog_users():
                 if user_id != self.scope['user'].id:
-                    # 🔹 1. В ОТКРЫТЫЙ ДИАЛОГ
-                    await self.channel_layer.group_send(
-                        self.room_group_name,
-                        {
-                            'type': 'messages_read',
-                        }
-                    )
-
-                    # 🔹 2. В СПИСОК ЧАТОВ
                     await self.channel_layer.group_send(
                         f'user_{user_id}',
                         {
@@ -66,39 +53,22 @@ class PrivateChatConsumer(AsyncWebsocketConsumer):
                             'dialog_id': self.dialog_id
                         }
                     )
-
             return
 
-        dialog_users = await self.get_dialog_users()
-
-        for user_id in dialog_users:
-            if user_id != self.scope['user'].id:
-                await self.channel_layer.group_send(
-                    f'user_{user_id}',
-                    {
-                        'type': 'messages_read',
-                        'dialog_id': self.dialog_id
-                    }
-                )
-
-        # 🔔 typing
+        # ✅ 2. TYPING
         if data.get('type') == 'typing':
             await self.handle_typing(data)
             return
 
-        # ✉️ обычное сообщение
+        # ✅ 3. MESSAGE
         message_text = data.get('message', '').strip()
         if not message_text:
             return
 
         user = self.scope['user']
-
         message = await self.save_message(user.id, message_text)
 
-        # уведомляем второго участника
-        dialog_users = await self.get_dialog_users()
-
-        for user_id in dialog_users:
+        for user_id in await self.get_dialog_users():
             if user_id != user.id:
                 await self.channel_layer.group_send(
                     f'user_{user_id}',
@@ -130,34 +100,8 @@ class PrivateChatConsumer(AsyncWebsocketConsumer):
             'is_typing': event['is_typing'],
         }))
 
-    # async def chat_message(self, event):
-    #     # Отправка сообщения клиенту
-    #     await self.send(text_data=json.dumps(event))
-
     async def chat_message(self, event):
         await self.send(text_data=json.dumps(event))
-
-        # 🔥 если сообщение пришло НЕ от меня — читаем сразу
-        if event.get('sender_id') != self.scope['user'].id:
-            # отмечаем сообщение прочитанным
-            await self.mark_message_read(event['id'])
-
-            # уведомляем отправителя
-            await self.channel_layer.group_send(
-                self.room_group_name,
-                {
-                    'type': 'messages_read',
-                }
-            )
-
-            # и список чатов
-            await self.channel_layer.group_send(
-                f'user_{event["sender_id"]}',
-                {
-                    'type': 'messages_read',
-                    'dialog_id': self.dialog_id
-                }
-            )
 
     async def messages_read(self, event):
         await self.send(text_data=json.dumps(event))

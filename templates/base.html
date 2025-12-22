@@ -36,7 +36,10 @@
             <h1 class="logo"><a href="{% url 'home' %}">my_blog</a></h1>
             <nav>
                 {% if user.is_authenticated %}
-                    <a href="{% url 'chat_list' %}">Диалоги</a>
+                    <a href="{% url 'chat_list' %}" class="nav-chat-link">
+                        Диалоги
+                        <span id="chat-unread-indicator" class="message-dot"></span>
+                    </a>
                     {% if not request.resolver_match.kwargs.pk == user.id %}
                         <a href="{% url 'profile' user.id %}">Профиль</a>
                     {% endif %}
@@ -115,6 +118,26 @@
 .navbar nav form {
     margin-bottom: 0 !important;
 }
+
+
+
+.nav-chat-link {
+    position: relative;
+}
+
+.message-dot {
+    position: absolute;
+    top: 2px;
+    right: -6px;
+    width: 10px;
+    height: 10px;
+    background: #4a76a8; /* цвет точки */
+    border-radius: 50%;
+    display: none; /* изначально скрыта */
+}
+
+
+
 </style>
 
 <script>
@@ -167,8 +190,41 @@ window.syncOnlineStatus = function () {
         }
     });
 };
+// Получаем состояние непрочитанных диалогов из localStorage
+window.UNREAD_CHATS = JSON.parse(localStorage.getItem('UNREAD_CHATS')) || {};
 
+// Функция обновления точки во вкладке
+function updateHeaderDot() {
+    const dot = document.getElementById('chat-unread-indicator');
+    const hasUnread = Object.values(window.UNREAD_CHATS).some(count => count > 0);
+    dot.style.display = hasUnread ? 'block' : 'none';
+};
 
+// Сразу после загрузки страницы показываем точку, если есть непрочитанные
+updateHeaderDot();
+
+// WebSocket для получения новых сообщений
+const chatSocket = new WebSocket(
+    (location.protocol === 'https:' ? 'wss://' : 'ws://') + location.host + '/ws/chat_list/'
+);
+
+chatSocket.onmessage = function(e) {
+    const data = JSON.parse(e.data);
+
+    if (data.type === 'new_message') {
+        // Отмечаем диалог как непрочитанный
+        window.UNREAD_CHATS[data.dialog_id] = 1;
+        localStorage.setItem('UNREAD_CHATS', JSON.stringify(window.UNREAD_CHATS));
+        updateHeaderDot();
+    }
+
+    if (data.type === 'messages_read') {
+        // Сообщения прочитаны → удаляем метку
+        delete window.UNREAD_CHATS[data.dialog_id];
+        localStorage.setItem('UNREAD_CHATS', JSON.stringify(window.UNREAD_CHATS));
+        updateHeaderDot();
+    }
+};
 </script>
 
 
