@@ -227,6 +227,16 @@
 
         messagesDiv.appendChild(div);
         messagesDiv.scrollTop = messagesDiv.scrollHeight;
+            // Автоскролл вниз к последнему сообщению
+        messagesDiv.scrollTop = messagesDiv.scrollHeight;
     }
+
+    // Функция скролла вниз
+    function scrollToBottom() {
+        messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    }
+
+    // Скроллим сразу после загрузки страницы
+    scrollToBottom();
 </script>
 {% endblock %}
