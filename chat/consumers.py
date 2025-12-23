@@ -2,6 +2,7 @@ import json
 from channels.generic.websocket import AsyncWebsocketConsumer
 from channels.db import database_sync_to_async
 from django.core.cache import cache
+from django.utils import timezone
 
 
 class PrivateChatConsumer(AsyncWebsocketConsumer):
@@ -289,6 +290,9 @@ class OnlineStatusConsumer(AsyncWebsocketConsumer):
         if count <= 0:
             cache.delete(self.cache_key)
 
+            # ❗ сохраняем last_seen
+            await self.set_last_seen()
+
             online_users = set(cache.get(ONLINE_USERS_KEY, []))
             online_users.discard(self.user.id)
             cache.set(ONLINE_USERS_KEY, list(online_users))
@@ -298,6 +302,7 @@ class OnlineStatusConsumer(AsyncWebsocketConsumer):
                 {
                     'type': 'user_offline',
                     'user_id': self.user.id,
+                    'last_seen': timezone.now().isoformat(),
                 }
             )
         else:
@@ -312,4 +317,14 @@ class OnlineStatusConsumer(AsyncWebsocketConsumer):
         await self.send(text_data=json.dumps(event))
 
     async def user_offline(self, event):
-        await self.send(text_data=json.dumps(event))
+        await self.send(text_data=json.dumps({
+            'type': 'user_offline',
+            'user_id': event['user_id'],
+            'last_seen': event.get('last_seen')
+        }))
+
+    @database_sync_to_async
+    def set_last_seen(self):
+        self.user.last_seen = timezone.now()
+        self.user.save(update_fields=['last_seen'])
+

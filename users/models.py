@@ -35,6 +35,8 @@ class CustomUser(AbstractUser):
     avatar = models.ImageField(default='avatars/default.png', upload_to='avatars/', verbose_name='Аватар',)
     bio = models.CharField(max_length=300, blank=True, verbose_name='О себе')
 
+    last_seen = models.DateTimeField(null=True, blank=True)
+
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []
 
