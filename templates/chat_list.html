@@ -116,6 +116,24 @@
     font-size: 13px;
 }
 
+.chat-item {
+    position: relative;
+}
+
+.pin-btn {
+    position: absolute;
+    right: 10px;
+    top: 10px;
+    cursor: pointer;
+    opacity: 0.5;
+    font-size: 16px;
+}
+
+.pin-btn:hover {
+    opacity: 1;
+}
+
+
 </style>
 
 <div class="chat-list">
@@ -123,65 +141,70 @@
 {% if chats %}
     {% for chat in chats %}
         {% with companion=chat.companion %}
-        <a href="{% url 'dialog' chat.id %}" class="chat-item" data-dialog-id="{{ chat.id }}">
-            <!-- Аватар -->
-            <div class="chat-avatar">
-                {% if companion.avatar %}
-                    <img src="{{ companion.avatar.url }}" alt="{{ companion.username }}">
-                {% else %}
-                    <div class="avatar-placeholder">
-                        {{ companion.username|first|upper }}
-                    </div>
-                {% endif %}
-            </div>
+            <a href="{% url 'dialog' chat.id %}" class="chat-item" data-dialog-id="{{ chat.id }}">
 
-            <!-- Контент -->
-            <div class="chat-body">
-                <span class="online-dot" data-user-id="{{ companion.id }}"></span>
-                <div class="chat-header">
-                    <span class="chat-username">
-                        {{ companion.username }}
-                    </span>
-                    {% if chat.unread_count > 0 %}
-                        <span class="unread-badge" id="unread-badge-{{ chat.id }}" style="display: flex;">
-                            {{ chat.unread_count|default:0 }}
-                        </span>
+                <!-- 📌 PIN -->
+                <span class="pin-btn"
+                      data-chat-id="{{ chat.id }}"
+                      title="Закрепить"
+                      onclick="event.preventDefault();">
+                    {% if chat.is_pinned %}📌{% else %}📍{% endif %}
+                </span>
 
-                    {% elif chat.messages.last %}
-                        <span class="chat-time">
-                            {{ chat.messages.last.created_at|date:"H:i" }}
-                        </span>
-                    {% endif %}
-                </div>
-
-
-
-                <div class="chat-preview" id="chat-preview-{{ chat.id }}"
-                     data-last-message="{% if chat.messages.last %}{{ chat.messages.last.text|truncatechars:40 }}{% endif %}"
-                >
-                    {% if chat.messages.last %}
-                        {% if chat.messages.last.sender == request.user %}
-                            <span class="read-status">
-                                {% if chat.messages.last.is_read %}
-                                    ✔✔
-                                {% else %}
-                                    ✔
-                                {% endif %}
-                            </span>
-                            {{ chat.messages.last.text|truncatechars:40 }}
-                        {% else %}
-                            {{ chat.messages.last.sender.username }}:
-                            {{ chat.messages.last.text|truncatechars:40 }}
-                        {% endif %}
+                <!-- Аватар -->
+                <div class="chat-avatar">
+                    {% if companion.avatar %}
+                        <img src="{{ companion.avatar.url }}">
                     {% else %}
-                        <span class="no-messages">Нет сообщений</span>
+                        <div class="avatar-placeholder">
+                            {{ companion.username|first|upper }}
+                        </div>
                     {% endif %}
                 </div>
 
 
+                <!-- Контент -->
+                <div class="chat-body">
+                    <span class="online-dot" data-user-id="{{ companion.id }}"></span>
+                    <div class="chat-header">
+                        <span class="chat-username">
+                            {{ companion.username }}
+                        </span>
+                        {% if chat.unread_count > 0 %}
+                            <span class="unread-badge" id="unread-badge-{{ chat.id }}" style="display: flex;">
+                                {{ chat.unread_count|default:0 }}
+                            </span>
 
-            </div>
-        </a>
+                        {% elif chat.messages.last %}
+                            <span class="chat-time">
+                                {{ chat.messages.last.created_at|date:"H:i" }}
+                            </span>
+                        {% endif %}
+                    </div>
+
+                    <div class="chat-preview" id="chat-preview-{{ chat.id }}"
+                         data-last-message="{% if chat.messages.last %}{{ chat.messages.last.text|truncatechars:40 }}{% endif %}"
+                    >
+                        {% if chat.messages.last %}
+                            {% if chat.messages.last.sender == request.user %}
+                                <span class="read-status">
+                                    {% if chat.messages.last.is_read %}
+                                        ✔✔
+                                    {% else %}
+                                        ✔
+                                    {% endif %}
+                                </span>
+                                {{ chat.messages.last.text|truncatechars:40 }}
+                            {% else %}
+                                {{ chat.messages.last.sender.username }}:
+                                {{ chat.messages.last.text|truncatechars:40 }}
+                            {% endif %}
+                        {% else %}
+                            <span class="no-messages">Нет сообщений</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </a>
         {% endwith %}
     {% endfor %}
 {% else %}
@@ -269,6 +292,27 @@ socket.onmessage = function(e) {
         chatItem.parentNode.prepend(chatItem);
     }
 };
+document.querySelectorAll('.pin-btn').forEach(btn => {
+    btn.addEventListener('click', e => {
+        e.stopPropagation();
+
+        const url = "{% url 'toggle_pin' 0 %}".replace('0', btn.dataset.chatId);
+
+        fetch(url, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}'
+            }
+        })
+        .then(r => r.json())
+        .then(data => {
+            btn.textContent = data.is_pinned ? '📌' : '📍';
+
+            const chatItem = btn.closest('.chat-item');
+            document.querySelector('.chat-list').prepend(chatItem);
+        });
+    });
+});
 </script>
 
 

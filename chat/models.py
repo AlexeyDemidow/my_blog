@@ -6,6 +6,9 @@ class Dialog(models.Model):
     users = models.ManyToManyField(CustomUser, related_name='dialogs')
     created_at = models.DateTimeField(auto_now_add=True)
 
+    is_pinned = models.BooleanField(default=False)
+    pinned_at = models.DateTimeField(null=True, blank=True)
+
     @property
     def companion(self):
         return self.users.exclude(id=self._current_user.id).first()

@@ -3,6 +3,8 @@ from django.db.models import Max, Count, Q, OuterRef, Subquery
 from django.http import HttpResponseForbidden, JsonResponse
 from django.shortcuts import redirect, get_object_or_404, render
 from django.contrib.auth.decorators import login_required
+from django.utils import timezone
+from django.views.decorators.http import require_POST
 from django.views.generic import ListView
 
 from users.models import CustomUser
@@ -39,6 +41,11 @@ class DialogList(LoginRequiredMixin, ListView):
                 )
             )
             .prefetch_related('users')
+            .order_by(
+                '-is_pinned',
+                '-pinned_at',
+                '-last_message_time'
+            )
         )
         for dialog in qs:
             dialog._current_user = user
@@ -67,3 +74,20 @@ def dialog_view(request, dialog_id):
         'dialog': dialog,
         'messages': messages
     })
+
+@login_required
+@require_POST
+def toggle_pin(request, dialog_id):
+    chat = Dialog.objects.get(
+        id=dialog_id,
+        users=request.user
+    )
+
+    chat.is_pinned = not chat.is_pinned
+    chat.pinned_at = timezone.now() if chat.is_pinned else None
+    chat.save()
+
+    return JsonResponse({
+        'is_pinned': chat.is_pinned
+    })
+
