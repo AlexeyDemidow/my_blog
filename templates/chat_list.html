@@ -146,6 +146,7 @@
                 <!-- 📌 PIN -->
                 <span class="pin-btn"
                       data-chat-id="{{ chat.id }}"
+                      data-pin-url="{% url 'toggle_pin' chat.id %}"
                       title="Закрепить"
                       onclick="event.preventDefault();">
                     {% if chat.is_pinned %}📌{% else %}📍{% endif %}
@@ -214,110 +215,7 @@
 {% endif %}
 
 </div>
-
 <script>
-const socket = new WebSocket(
-    (location.protocol === 'https:' ? 'wss://' : 'ws://')
-    + location.host + '/ws/chat_list/'
-);
-
-socket.onmessage = function(e) {
-    const data = JSON.parse(e.data);
-
-    const chatItem = document.querySelector(
-        `.chat-item[data-dialog-id="${data.dialog_id}"]`
-    );
-    if (!chatItem) return;
-
-    const preview = chatItem.querySelector('.chat-preview');
-
-    /* =======================
-       ✔✔ ПРОЧИТАНО
-    ======================= */
-    if (data.type === 'messages_read') {
-
-        // удаляем badge
-        const badge = chatItem.querySelector('.unread-badge');
-        if (badge) badge.remove();
-
-        // удаляем точку (dot)
-        const dot = chatItem.querySelector('.online-dot');
-        if (dot) dot.remove();
-
-        // меняем ✔ → ✔✔ в превью, если сообщение своё
-        const status = preview.querySelector('.read-status');
-        if (status) {
-            status.textContent = '✔✔';
-        }
-        return;
-    }
-
-    /* =======================
-       ✍️ TYPING
-    ======================= */
-    if (data.type === 'chat_typing') {
-        if (data.is_typing) {
-            preview.textContent = 'печатает…';
-            preview.classList.add('typing');
-        } else {
-            preview.textContent = preview.dataset.lastMessage || '';
-            preview.classList.remove('typing');
-        }
-        return;
-    }
-
-    /* =======================
-       ✉️ NEW MESSAGE
-    ======================= */
-    if (data.type === 'new_message') {
-
-        // badge
-        let badge = chatItem.querySelector('.unread-badge');
-        if (!badge) {
-            badge = document.createElement('span');
-            badge.className = 'unread-badge';
-            badge.textContent = '1';
-            chatItem.querySelector('.chat-header').appendChild(badge);
-        } else {
-            badge.textContent = parseInt(badge.textContent) + 1;
-        }
-
-        // превью
-        const text = `${data.sender}: ${data.message}`;
-        preview.textContent = text;
-        preview.dataset.lastMessage = text;
-        preview.classList.remove('typing');
-
-        // поднимаем чат
-        chatItem.parentNode.prepend(chatItem);
-    }
-};
-document.querySelectorAll('.pin-btn').forEach(btn => {
-    btn.addEventListener('click', e => {
-        e.stopPropagation();
-
-        const url = "{% url 'toggle_pin' 0 %}".replace('0', btn.dataset.chatId);
-
-        fetch(url, {
-            method: 'POST',
-            headers: {
-                'X-CSRFToken': '{{ csrf_token }}'
-            }
-        })
-        .then(r => r.json())
-        .then(data => {
-            btn.textContent = data.is_pinned ? '📌' : '📍';
-
-            const chatItem = btn.closest('.chat-item');
-            document.querySelector('.chat-list').prepend(chatItem);
-        });
-    });
-});
+    window.CSRF_TOKEN = "{{ csrf_token }}";
 </script>
-
-
-
-
-
-
 {% endblock %}
