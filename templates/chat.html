@@ -441,13 +441,6 @@
         }
     };
 
-    {#    if (window.UNREAD_CHATS) {#}
-    {#        delete window.UNREAD_CHATS[dialogId];#}
-    {#        localStorage.setItem('UNREAD_CHATS', JSON.stringify(window.UNREAD_CHATS));#}
-    {#        if (typeof updateHeaderDot === 'function') updateHeaderDot();#}
-    {#    }#}
-    {# }#}
-
     socket.onmessage = function (e) {
         const data = JSON.parse(e.data);
 
@@ -507,7 +500,6 @@
         readSent = false;
         setTimeout(tryMarkAsRead, 0);
 
-        {#tryMarkAsRead();#}
         let readStatus = '';
 
         if (sender === currentUser) {
