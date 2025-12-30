@@ -219,7 +219,8 @@ chatSocket.onmessage = function(e) {
 
     if (data.type === 'new_message') {
         // Отмечаем диалог как непрочитанный
-        window.UNREAD_CHATS[data.dialog_id] = 1;
+        window.UNREAD_CHATS[data.dialog_id] = (window.UNREAD_CHATS[data.dialog_id] || 0) + 1;
+
         localStorage.setItem('UNREAD_CHATS', JSON.stringify(window.UNREAD_CHATS));
         updateHeaderDot();
     }

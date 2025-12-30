@@ -34,26 +34,45 @@ class PrivateChatConsumer(AsyncWebsocketConsumer):
         data = json.loads(text_data)
 
         # ✅ 1. ЧТЕНИЕ (ТОЛЬКО ТУТ)
-        if data.get('type') == 'messages_read':
-            await self.mark_messages_as_read()
+        # if data.get('type') == 'messages_read':
+        #     await self.mark_messages_as_read()
+        #
+        #     await self.channel_layer.group_send(
+        #         self.room_group_name,
+        #         {
+        #             'type': 'messages_read',
+        #             'dialog_id': self.dialog_id
+        #         }
+        #     )
 
-            await self.channel_layer.group_send(
-                self.room_group_name,
-                {
-                    'type': 'messages_read',
-                    'dialog_id': self.dialog_id
-                }
-            )
+        if data.get('type') == 'messages_read':
+            read_ids = await self.mark_messages_as_read()
+            if not read_ids:
+                return
 
             for user_id in await self.get_dialog_users():
                 if user_id != self.scope['user'].id:
                     await self.channel_layer.group_send(
-                        f'user_{user_id}',
+                        self.room_group_name,
                         {
                             'type': 'messages_read',
-                            'dialog_id': self.dialog_id
+                            'dialog_id': self.dialog_id,
+                            'message_ids': read_ids
                         }
                     )
+            return
+
+            # return
+
+            # for user_id in await self.get_dialog_users():
+            #     if user_id != self.scope['user'].id:
+            #         await self.channel_layer.group_send(
+            #             f'user_{user_id}',
+            #             {
+            #                 'type': 'messages_read',
+            #                 'dialog_id': self.dialog_id
+            #             }
+            #         )
             return
 
         # ✅ 2. TYPING
@@ -106,6 +125,8 @@ class PrivateChatConsumer(AsyncWebsocketConsumer):
 
     async def messages_read(self, event):
         await self.send(text_data=json.dumps(event))
+
+
 
     async def chat_typing(self, event):
         await self.send(text_data=json.dumps(event))
@@ -166,13 +187,25 @@ class PrivateChatConsumer(AsyncWebsocketConsumer):
         # Сравниваем по id, чтобы избежать ленивых ссылок
         return self.scope['user'].id in [u.id for u in dialog.users.all()]
 
+    # @database_sync_to_async
+    # def mark_messages_as_read(self):
+    #     from .models import Message
+    #     Message.objects.filter(
+    #         dialog_id=self.dialog_id,
+    #         is_read=False
+    #     ).exclude(sender=self.scope['user']).update(is_read=True)
+
     @database_sync_to_async
     def mark_messages_as_read(self):
         from .models import Message
-        Message.objects.filter(
+        qs = Message.objects.filter(
             dialog_id=self.dialog_id,
             is_read=False
-        ).exclude(sender=self.scope['user']).update(is_read=True)
+        ).exclude(sender=self.scope['user'])
+
+        ids = list(qs.values_list('id', flat=True))
+        qs.update(is_read=True)
+        return ids
 
     @database_sync_to_async
     def mark_message_read(self, message_id):
@@ -236,7 +269,8 @@ class ChatListConsumer(AsyncWebsocketConsumer):
     async def messages_read(self, event):
         await self.send(text_data=json.dumps({
             'type': 'messages_read',
-            'dialog_id': event['dialog_id']
+            'dialog_id': event['dialog_id'],
+            'message_ids': event.get('message_ids', [])
         }))
 
 
