@@ -27,3 +27,11 @@ class Message(models.Model):
     def __str__(self):
         return f'{self.sender}: {self.text[:20]}'
 
+
+class MessageLike(models.Model):
+    message = models.ForeignKey(Message, on_delete=models.CASCADE, related_name='message_likes')
+    sender = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('message', 'sender')

@@ -1,5 +1,5 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.db.models import Max, Count, Q, OuterRef, Subquery
+from django.db.models import Max, Count, Q, OuterRef, Subquery, Exists
 from django.http import HttpResponseForbidden, JsonResponse
 from django.shortcuts import redirect, get_object_or_404, render
 from django.contrib.auth.decorators import login_required
@@ -8,7 +8,7 @@ from django.views.decorators.http import require_POST
 from django.views.generic import ListView
 
 from users.models import CustomUser
-from .models import Dialog, Message
+from .models import Dialog, Message, MessageLike
 from .services import get_or_create_dialog
 
 
@@ -68,7 +68,16 @@ def dialog_view(request, dialog_id):
         is_read=False
     ).exclude(sender=request.user).update(is_read=True)
 
-    messages = dialog.messages.select_related('sender')
+    # messages = dialog.messages.select_related('sender')
+
+    messages = Message.objects.filter(dialog=dialog).annotate(
+        is_liked=Exists(
+            MessageLike.objects.filter(
+                message=OuterRef('pk'),
+                sender=request.user
+            )
+        )
+    )
 
     return render(request, 'chat.html', {
         'dialog': dialog,
@@ -89,5 +98,22 @@ def toggle_pin(request, dialog_id):
 
     return JsonResponse({
         'is_pinned': chat.is_pinned
+    })
+
+@login_required
+def like_unlike_message(request, message_id):
+    message = get_object_or_404(Message, id=message_id)
+
+    message_like, created = MessageLike.objects.get_or_create(sender=request.user, message=message)
+    if not created:
+        message_like.delete()
+        is_liked = False
+    else:
+        is_liked = True
+
+    return JsonResponse({
+        'status': 'success',
+        'is_liked': is_liked,
+        'like_count': message.message_likes.count()
     })
 
