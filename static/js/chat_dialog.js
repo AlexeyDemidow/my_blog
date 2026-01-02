@@ -27,33 +27,55 @@ document.addEventListener('DOMContentLoaded', function() {
     };
 
     socket.onmessage = function (e) {
-        const data = JSON.parse(e.data);
+    const data = JSON.parse(e.data);
 
-        if (data.type === 'typing' && data.username !== currentUser) {
-            typingIndicator.textContent = data.is_typing
-                ? `${data.username} печатает...`
-                : '';
-            return;
+    // -------- typing --------
+    if (data.type === 'typing' && data.username !== currentUser) {
+        typingIndicator.textContent = data.is_typing
+            ? `${data.username} печатает...`
+            : '';
+        return;
+    }
+
+    // -------- read --------
+    if (data.type === 'messages_read' && data.message_ids) {
+        data.message_ids.forEach(id => {
+            const msg = document.querySelector(
+                `.message.me[data-id="${id}"] .read-status`
+            );
+            if (msg) msg.textContent = '✔✔';
+        });
+        return;
+    }
+
+    // -------- like --------
+    if (data.type === 'like_update') {
+        const messageId = data.message_id;
+        console.log(window.CURRENT_USER_ID)
+        console.log(data.username)
+        // обновляем счётчик ВСЕМ
+        $('#actual-message-like-' + messageId).text(data.like_count);
+
+        // обновляем сердце ТОЛЬКО себе
+        if (data.username === window.CURRENT_USER_ID) {
+            const iconHtml = data.is_liked
+                ? '<i class="fa-solid fa-heart" style="color:red;"></i>'
+                : '<i class="fa-regular fa-heart"></i>';
+
+            $(`.message-like-btn[data-message-id="${messageId}"]`)
+                .html(iconHtml);
         }
 
-        if (data.type === 'messages_read' && data.message_ids) {
-            data.message_ids.forEach(id => {
-                const msg = document.querySelector(
-                    `.message.me[data-id="${id}"] .read-status`
-                );
-                if (msg) msg.textContent = '✔✔';
-            });
-            return;
-        }
+        return;
+    }
 
-
-        if (data.message) {
-            typingIndicator.textContent = '';
-            addMessage(data.sender, data.message, data.id);
-
-            setTimeout(tryMarkAsRead, 0);
-        }
-    };
+    // -------- message --------
+    if (data.message) {
+        typingIndicator.textContent = '';
+        addMessage(data.sender, data.message, data.id);
+        setTimeout(tryMarkAsRead, 0);
+    }
+};
 
     function sendMessage() {
         const text = input.value.trim();
@@ -176,4 +198,41 @@ document.addEventListener('DOMContentLoaded', function() {
     window.addEventListener('beforeunload', () => {
         readSent = false;
     });
+
+
+    $(document).on('click', '.message-like-btn', function (e) {
+        e.preventDefault();
+
+        const messageId = $(this).data('message-id');
+
+        socket.send(JSON.stringify({
+            type: 'toggle_like',
+            message_id: messageId
+        }));
+    });
+
+    // socket.onmessage = function (e) {
+    //     const data = JSON.parse(e.data);
+
+    // if (data.type === 'like_update') {
+    //     const messageId = data.message_id;
+    //
+    //     // обновляем счётчик
+    //     $('#actual-message-like-' + messageId).text(data.like_count);
+    //
+    //     // обновляем иконку
+    //     if (data.user_id === window.CURRENT_USER_ID) {
+    //         const iconHtml = data.is_liked
+    //             ? '<i class="fa-solid fa-heart" style="color:red;"></i>'
+    //             : '<i class="fa-regular fa-heart"></i>';
+    //
+    //         $(`.message-like-btn[data-message-id="${messageId}"]`)
+    //             .html(iconHtml);
+    //     }
+    //
+    // }
+    // };
+
 })
+
+

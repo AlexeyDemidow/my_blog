@@ -4,6 +4,8 @@ from channels.db import database_sync_to_async
 from django.core.cache import cache
 from django.utils import timezone
 
+from chat.models import Message, MessageLike
+
 
 class PrivateChatConsumer(AsyncWebsocketConsumer):
     async def connect(self):
@@ -32,6 +34,9 @@ class PrivateChatConsumer(AsyncWebsocketConsumer):
 
     async def receive(self, text_data):
         data = json.loads(text_data)
+
+        if data['type'] == 'toggle_like':
+            await self.toggle_like(data['message_id'])
 
         if data.get('type') == 'messages_read':
             read_ids = await self.mark_messages_as_read()
@@ -101,7 +106,25 @@ class PrivateChatConsumer(AsyncWebsocketConsumer):
     async def messages_read(self, event):
         await self.send(text_data=json.dumps(event))
 
+    async def toggle_like(self, message_id):
+        data = await self.toggle_like_db(message_id)
 
+        await self.channel_layer.group_send(
+            self.room_group_name,
+            {
+                'type': 'like_update',
+                **data
+            }
+        )
+
+    async def like_update(self, event):
+        await self.send(text_data=json.dumps({
+            'type': 'like_update',
+            'message_id': event['message_id'],
+            'is_liked': event['is_liked'],
+            'like_count': event['like_count'],
+            'username': event['username'],
+        }))
 
     async def chat_typing(self, event):
         await self.send(text_data=json.dumps(event))
@@ -184,6 +207,27 @@ class PrivateChatConsumer(AsyncWebsocketConsumer):
         from .models import Dialog
         dialog = Dialog.objects.get(id=self.dialog_id)
         return list(dialog.users.values_list('id', flat=True))
+
+    @database_sync_to_async
+    def toggle_like_db(self, message_id):
+        message = Message.objects.get(id=message_id)
+        user = self.scope['user']
+        like, created = MessageLike.objects.get_or_create(
+            message=message,
+            sender=self.scope['user']
+        )
+        if not created:
+            like.delete()
+            is_liked = False
+        else:
+            is_liked = True
+
+        return {
+            'message_id': message_id,
+            'is_liked': is_liked,
+            'like_count': message.message_likes.count(),
+            'username': user.username
+        }
 
 
 class ChatListConsumer(AsyncWebsocketConsumer):
