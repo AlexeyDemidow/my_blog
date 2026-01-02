@@ -30,7 +30,6 @@
             <script src="{% static '/js/paginate_posts.js' %}"></script>
             <script src="{% static '/js/online_ofline_status.js' %}" defer></script>
             <script src="{% static '/js/chat_list.js' %}"></script>
-            <script src="{% static '/js/chat_dialog.js' %}"></script>
 {#            <script src="{% static '/js/emoji_panel.js' %}"></script>#}
 
 </head>
@@ -148,6 +147,8 @@
 <script>
 window.ONLINE_USERS = new Set();
 window.UNREAD_CHATS = JSON.parse(localStorage.getItem('UNREAD_CHATS')) || {};
+window.DIALOG_ID = {{ dialog.id }};
+window.CURRENT_USER_ID = "{{ request.user.username }}";
 </script>
 
 

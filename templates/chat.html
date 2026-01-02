@@ -418,4 +418,9 @@
     window.DIALOG_ID = {{ dialog.id }};
     window.CURRENT_USER_ID = "{{ request.user.username }}";
 </script>
+
+{% load static %}
+{% block scripts %}
+    <script src="{% static 'js/chat_dialog.js' %}"></script>
+{% endblock %}
 {% endblock %}
