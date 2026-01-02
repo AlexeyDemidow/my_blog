@@ -3,39 +3,28 @@ document.addEventListener('DOMContentLoaded', function() {
     const dialogId = window.DIALOG_ID;
     const currentUser = window.CURRENT_USER_ID;
 
-    const messagesDiv = document.getElementById('chat-messages');
-    const typingIndicator = document.getElementById('typing-indicator');
-    const input = document.getElementById('message-input');
-    const sendBtn = document.getElementById('send-btn');
-
-    const emojiBtn = document.getElementById('emoji-btn');
-    const emojiPanel = document.getElementById('emoji-panel');
-    const messageInput = document.getElementById('message-input');
-
-
-
     const socket = new WebSocket(
         (window.location.protocol === 'https:' ? 'wss://' : 'ws://')
         + window.location.host
         + '/ws/chat/' + dialogId + '/'
     );
 
-
+    const messagesDiv = document.getElementById('chat-messages');
+    const typingIndicator = document.getElementById('typing-indicator');
+    const input = document.getElementById('message-input');
+    const sendBtn = document.getElementById('send-btn');
 
     let typingTimer = null;
 
-    socket.onopen = function() {
-        socket.send(JSON.stringify({
-            type: 'messages_read',
-            dialog_id: dialogId
-        }));
+    socket.onopen = function () {
+        tryMarkAsRead();
 
         if (window.UNREAD_CHATS) {
             delete window.UNREAD_CHATS[dialogId];
             localStorage.setItem('UNREAD_CHATS', JSON.stringify(window.UNREAD_CHATS));
             if (typeof updateHeaderDot === 'function') updateHeaderDot();
         }
-    }
+    };
 
     socket.onmessage = function (e) {
         const data = JSON.parse(e.data);
@@ -47,16 +36,22 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
 
-        if (data.type === 'messages_read') {
-            document.querySelectorAll('.message.me .read-status').forEach(el => {
-                el.textContent = '✔✔';
+        if (data.type === 'messages_read' && data.message_ids) {
+            data.message_ids.forEach(id => {
+                const msg = document.querySelector(
+                    `.message.me[data-id="${id}"] .read-status`
+                );
+                if (msg) msg.textContent = '✔✔';
             });
             return;
         }
 
+
         if (data.message) {
             typingIndicator.textContent = '';
-            addMessage(data.sender, data.message);
+            addMessage(data.sender, data.message, data.id);
+
+            setTimeout(tryMarkAsRead, 0);
         }
     };
 
@@ -64,7 +59,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const text = input.value.trim();
         if (!text) return;
 
-        socket.send(JSON.stringify({ message: text }));
+        socket.send(JSON.stringify({message: text}));
         input.value = '';
     }
 
@@ -75,17 +70,20 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     input.addEventListener('input', () => {
-        socket.send(JSON.stringify({ type: 'typing', is_typing: true }));
+        socket.send(JSON.stringify({type: 'typing', is_typing: true}));
 
         clearTimeout(typingTimer);
         typingTimer = setTimeout(() => {
-            socket.send(JSON.stringify({ type: 'typing', is_typing: false }));
+            socket.send(JSON.stringify({type: 'typing', is_typing: false}));
         }, 1200);
     });
 
-    function addMessage(sender, message) {
+    function addMessage(sender, message, id) {
         const div = document.createElement('div');
         div.classList.add('message');
+        div.dataset.id = id;
+        readSent = false;
+        setTimeout(tryMarkAsRead, 0);
 
         let readStatus = '';
 
@@ -111,8 +109,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
     scrollToBottom();
 
-
-
+    const emojiBtn = document.getElementById('emoji-btn');
+    const emojiPanel = document.getElementById('emoji-panel');
+    const messageInput = document.getElementById('message-input');
 
     emojiBtn.addEventListener('click', () => {
         emojiPanel.style.display = emojiPanel.style.display === 'none' ? 'block' : 'none';
@@ -131,4 +130,50 @@ document.addEventListener('DOMContentLoaded', function() {
             emojiPanel.style.display = 'none';
         }
     });
-});
+
+
+    let windowFocused = true;
+    let readSent = false;
+
+    document.addEventListener('visibilitychange', () => {
+        windowFocused = !document.hidden;
+        tryMarkAsRead();
+    });
+
+    function isScrolledToBottom() {
+        const threshold = 40;
+        return (
+            messagesDiv.scrollHeight
+            - messagesDiv.scrollTop
+            - messagesDiv.clientHeight
+        ) < threshold;
+    }
+
+    messagesDiv.addEventListener('scroll', tryMarkAsRead);
+
+    function tryMarkAsRead() {
+        if (!windowFocused) return;
+        if (!isScrolledToBottom()) return;
+        if (readSent) return;
+
+        socket.send(JSON.stringify({
+            type: 'messages_read',
+            dialog_id: dialogId
+        }));
+        readSent = true;
+    }
+
+    let dialogInFocus = document.visibilityState === 'visible';
+
+    document.addEventListener('visibilitychange', () => {
+        dialogInFocus = document.visibilityState === 'visible';
+
+        if (dialogInFocus) {
+            tryMarkAsRead();
+        }
+    });
+
+    window.addEventListener('beforeunload', () => {
+        readSent = false;
+    });
+})
