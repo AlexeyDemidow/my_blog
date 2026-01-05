@@ -20,9 +20,6 @@
         </span>
         </div>
 
-
-
-
         <p><img src="{{ c_user.avatar.url }}" alt="Аватар" class="round"></p>
         <h1>{{ c_user.username }}</h1>
         <p>Email: {{ c_user.email }}</p>
@@ -36,7 +33,7 @@
     {% endif %}
     <!-- ЛЕНТА -->
 <form method="get" class="sort-container" style="margin-bottom:15px;">
-    <select name="sort" onchange="this.form.submit()">
+    <select name="sort" id="sort-selector">
         <option value="date-new" {% if request.GET.sort == 'date-new' or not request.GET.sort %}selected{% endif %}>По дате (сначала новые)</option>
         <option value="date-old" {% if request.GET.sort == 'date-old' %}selected{% endif %}>По дате (сначала старые)</option>
         <option value="likes" {% if request.GET.sort == 'likes' %}selected{% endif %}>По лайкам</option>
@@ -44,7 +41,7 @@
         <option value="comments" {% if request.GET.sort == 'comments' %}selected{% endif %}>По комментариям</option>
     </select>
 </form>
-    <div id="posts-container">
+    <div id="posts-container" data-user-id="{{ c_user.id }}">
         {% include "partials/post_items.html" %}
     </div>
 {% endblock %}

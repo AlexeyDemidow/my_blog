@@ -14,6 +14,7 @@ from django.db.models import Exists, OuterRef, Prefetch, Count
 
 from posts.forms import PostCreationForm, PostImageFormSet
 from posts.models import Post, PostLike, Comment, PostImage, CommentLike
+from users.views import Profile
 
 
 class PostList(ListView):
@@ -357,7 +358,7 @@ def del_comment(request, pk):
     })
 
 
-def pag_posts(request):
+def pag_home_posts(request):
     page = request.GET.get("page", 1)
     sort = request.GET.get("sort", "date-new")
 
@@ -369,6 +370,37 @@ def pag_posts(request):
     posts = paginator.get_page(page)
 
     html = render_to_string("partials/post_items.html", {"posts": posts, "user": request.user})
+
+    return JsonResponse({
+        "posts_html": html,
+        "has_next": posts.has_next(),
+        "next_page": posts.next_page_number() if posts.has_next() else None,
+    })
+
+
+from django.core.paginator import Paginator
+from django.template.loader import render_to_string
+from django.http import JsonResponse
+
+def pag_profile_posts(request, pk):
+    page = int(request.GET.get("page", 1))
+    sort = request.GET.get("sort", "date-new")
+
+    view = Profile()
+    view.request = request
+    view.kwargs = {"pk": pk}
+
+    qs = view.get_posts_queryset()
+    paginator = Paginator(qs, 3)
+    posts = paginator.get_page(page)
+
+    # is_liked уже аннотировано, дополнительная фильтрация не нужна
+
+    html = render_to_string(
+        "partials/post_items.html",
+        {"posts": posts, "user": request.user},
+        request=request
+    )
 
     return JsonResponse({
         "posts_html": html,
