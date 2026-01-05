@@ -171,6 +171,19 @@
                         </span>
                     {% endif %}
                 </div>
+
+                {% if user.is_authenticated %}
+                    <div class="message-options-menu" data-message-id="{{ msg.id }}">
+                        <button class="options-btn">⋮</button>
+                        <div class="dropdown">
+                            <a href="">Редактировать сообщение</a>
+                            <button class="del-message-btn" data-message-id="{{ msg.id }}">
+                                Удалить сообщение
+                            </button>
+                        </div>
+                    </div>
+                {% endif %}
+
             </div>
         {% endfor %}
     </div>

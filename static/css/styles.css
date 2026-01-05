@@ -664,3 +664,16 @@ button[type="submit"]:hover {
 .online-dot.online {
     background: #4caf50;
 }
+
+.message-options-menu {
+    position: relative;
+    display: inline-block;
+}
+
+.dropdown {
+    display: none;
+}
+
+.message-options-menu.active .dropdown {
+    display: block;
+}
