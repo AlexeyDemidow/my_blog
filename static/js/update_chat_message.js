@@ -18,6 +18,20 @@ document.addEventListener("click", function (e) {
         textarea.rows = 2;
         textarea.classList.add("edit-message-textarea");
 
+        // ⌨️ Enter / Shift+Enter / Esc
+        textarea.addEventListener("keydown", function (e) {
+            // Enter — сохранить
+            if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault();
+                saveEditedMessage(messageId);
+            }
+
+            // Esc — отмена
+            if (e.key === "Escape") {
+                cancelEdit(messageDiv, oldText);
+            }
+        });
+
         const saveBtn = document.createElement("button");
         saveBtn.textContent = "Сохранить";
         saveBtn.classList.add("save-message-btn");
@@ -73,8 +87,50 @@ document.addEventListener("click", function (e) {
                 `;
             }
         });
+        textarea.addEventListener("input", () => {
+            textarea.style.height = "auto";
+            textarea.style.height = textarea.scrollHeight + "px";
+        });
+
     }
 });
+
+function saveEditedMessage(messageId) {
+    const messageDiv = document.querySelector(`.message[data-id="${messageId}"]`);
+    const textarea = messageDiv.querySelector("textarea");
+    const newText = textarea.value.trim();
+
+    if (!newText) return;
+
+    fetch(`/chat/update_message/${messageId}/`, {
+        method: "POST",
+        headers: {
+            "X-CSRFToken": getCSRFToken(),
+            "Content-Type": "application/x-www-form-urlencoded",
+        },
+        body: `text=${encodeURIComponent(newText)}`
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.status === "success") {
+            const textDiv = messageDiv.querySelector(".text");
+            textDiv.innerHTML = `
+                ${data.text}
+                <span class="chat-time">отредактировано</span>
+            `;
+        }
+    });
+}
+
+function cancelEdit(messageDiv, oldText) {
+    const textDiv = messageDiv.querySelector(".text");
+    textDiv.innerHTML = `
+        ${oldText}
+        <span class="chat-time"></span>
+    `;
+}
+
+
 
 // ---------- CSRF ----------
 function getCSRFToken() {
