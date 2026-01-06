@@ -77,6 +77,12 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 };
 
+    input.addEventListener('input', () => {
+        input.style.height = 'auto';
+        input.style.height = input.scrollHeight + 'px';
+    });
+
+
     function sendMessage() {
         const text = input.value.trim();
         if (!text) return;
@@ -88,11 +94,15 @@ document.addEventListener('DOMContentLoaded', function() {
         input.value = '';
     }
 
-    sendBtn.onclick = sendMessage;
+    sendBtn.addEventListener('click', sendMessage);
 
-    input.addEventListener('keydown', e => {
-        if (e.key === 'Enter') sendMessage();
+    input.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault(); // ⛔ перенос строки
+            sendMessage();
+        }
     });
+
 
     input.addEventListener('input', () => {
         socket.send(JSON.stringify({type: 'typing', is_typing: true}));
@@ -214,27 +224,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }));
     });
 
-    // socket.onmessage = function (e) {
-    //     const data = JSON.parse(e.data);
 
-    // if (data.type === 'like_update') {
-    //     const messageId = data.message_id;
-    //
-    //     // обновляем счётчик
-    //     $('#actual-message-like-' + messageId).text(data.like_count);
-    //
-    //     // обновляем иконку
-    //     if (data.user_id === window.CURRENT_USER_ID) {
-    //         const iconHtml = data.is_liked
-    //             ? '<i class="fa-solid fa-heart" style="color:red;"></i>'
-    //             : '<i class="fa-regular fa-heart"></i>';
-    //
-    //         $(`.message-like-btn[data-message-id="${messageId}"]`)
-    //             .html(iconHtml);
-    //     }
-    //
-    // }
-    // };
 
 })
 
