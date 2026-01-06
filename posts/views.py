@@ -341,6 +341,24 @@ def add_comment(request, pk):
 
 @require_POST
 @login_required
+def update_comment(request, pk):
+    comment = get_object_or_404(Comment, id=pk, user=request.user)
+    text = request.POST.get("text", "").strip()
+
+    if not text:
+        return JsonResponse({"status": "error"})
+
+    comment.text = text
+    comment.save()
+
+    return JsonResponse({
+        "status": "success",
+        "text": comment.text
+    })
+
+
+@require_POST
+@login_required
 def del_comment(request, pk):
     comment = Comment.objects.filter(
         id=pk,
@@ -378,9 +396,6 @@ def pag_home_posts(request):
     })
 
 
-from django.core.paginator import Paginator
-from django.template.loader import render_to_string
-from django.http import JsonResponse
 
 def pag_profile_posts(request, pk):
     page = int(request.GET.get("page", 1))
@@ -393,8 +408,6 @@ def pag_profile_posts(request, pk):
     qs = view.get_posts_queryset()
     paginator = Paginator(qs, 3)
     posts = paginator.get_page(page)
-
-    # is_liked уже аннотировано, дополнительная фильтрация не нужна
 
     html = render_to_string(
         "partials/post_items.html",

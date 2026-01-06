@@ -134,6 +134,12 @@
                     {% if user.is_authenticated and user == comment.user %}
                         <button class="modal-del-comment-btn" data-comment-id="{{ comment.id }}">Удалить</button>
                     {% endif %}
+
+                    {% if user.is_authenticated and user == comment.user %}
+                        <a href="{% url 'update_comment' comment.id %}" class="edit-comment-btn" data-comment-id="{{ comment.id }}">
+                            Редактировать
+                        </a>
+                    {% endif %}
                 </li>
             {% endfor %}
 
