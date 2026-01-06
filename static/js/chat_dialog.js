@@ -81,7 +81,10 @@ document.addEventListener('DOMContentLoaded', function() {
         const text = input.value.trim();
         if (!text) return;
 
-        socket.send(JSON.stringify({message: text}));
+        socket.send(JSON.stringify({
+            type: 'message',
+            message: text
+        }));
         input.value = '';
     }
 
