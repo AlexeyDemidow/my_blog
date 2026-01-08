@@ -55,6 +55,10 @@ class PrivateChatConsumer(AsyncWebsocketConsumer):
                     )
             return
 
+        if data["type"] == "edit_message":
+            await self.edit_message(data)
+            return
+
         # ✅ 2. TYPING
         if data.get('type') == 'typing':
             await self.handle_typing(data)
@@ -157,6 +161,44 @@ class PrivateChatConsumer(AsyncWebsocketConsumer):
                         'is_typing': is_typing
                     }
                 )
+
+    async def edit_message(self, data):
+        message_id = data.get("message_id")
+        new_text = data.get("text", "").strip()
+        user = self.scope["user"]
+
+        if not new_text:
+            return
+
+        from chat.models import Message
+
+        try:
+            message = await database_sync_to_async(Message.objects.get)(id=message_id, sender=user)
+        except Message.DoesNotExist:
+            return
+
+        message.text = new_text
+        message.is_edited = True
+        await database_sync_to_async(message.save)()
+
+        # 🔥 рассылаем ВСЕМ
+        await self.channel_layer.group_send(
+            self.room_group_name,
+            {
+                "type": "message_edited",
+                "message_id": message.id,
+                "text": message.text,
+                "username": user.username,
+            }
+        )
+
+    async def message_edited(self, event):
+        await self.send(text_data=json.dumps({
+            "type": "message_edited",
+            "message_id": event["message_id"],
+            "text": event["text"],
+            "username": event["username"],
+        }))
 
     # ---------------------------
     # Работа с базой данных

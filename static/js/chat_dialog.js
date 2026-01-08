@@ -1,9 +1,11 @@
+let socket = null;
+
 document.addEventListener('DOMContentLoaded', function() {
 
     const dialogId = window.DIALOG_ID;
     const currentUser = window.CURRENT_USER_ID;
 
-    const socket = new WebSocket(
+    socket = new WebSocket(
         (window.location.protocol === 'https:' ? 'wss://' : 'ws://')
         + window.location.host
         + '/ws/chat/' + dialogId + '/'
@@ -27,55 +29,74 @@ document.addEventListener('DOMContentLoaded', function() {
     };
 
     socket.onmessage = function (e) {
-    const data = JSON.parse(e.data);
+        const data = JSON.parse(e.data);
 
-    // -------- typing --------
-    if (data.type === 'typing' && data.username !== currentUser) {
-        typingIndicator.textContent = data.is_typing
-            ? `${data.username} печатает...`
-            : '';
-        return;
-    }
-
-    // -------- read --------
-    if (data.type === 'messages_read' && data.message_ids) {
-        data.message_ids.forEach(id => {
-            const msg = document.querySelector(
-                `.message.me[data-id="${id}"] .read-status`
+    // -------- edit message --------
+        if (data.type === "message_edited") {
+            const messageDiv = document.querySelector(
+                `.message[data-id="${data.message_id}"]`
             );
-            if (msg) msg.textContent = '✔✔';
-        });
-        return;
-    }
+            if (!messageDiv) return;
 
-    // -------- like --------
-    if (data.type === 'like_update') {
-        const messageId = data.message_id;
-        console.log(window.CURRENT_USER_ID)
-        console.log(data.username)
-        // обновляем счётчик ВСЕМ
-        $('#actual-message-like-' + messageId).text(data.like_count);
-
-        // обновляем сердце ТОЛЬКО себе
-        if (data.username === window.CURRENT_USER_ID) {
-            const iconHtml = data.is_liked
-                ? '<i class="fa-solid fa-heart" style="color:red;"></i>'
-                : '<i class="fa-regular fa-heart"></i>';
-
-            $(`.message-like-btn[data-message-id="${messageId}"]`)
-                .html(iconHtml);
+            const textDiv = messageDiv.querySelector(".text");
+            textDiv.innerHTML = `
+                ${data.text}
+                <span class="chat-time">отредактировано</span>
+            `;
+            return;
         }
 
-        return;
-    }
 
-    // -------- message --------
-    if (data.message) {
-        typingIndicator.textContent = '';
-        addMessage(data.sender, data.message, data.id);
-        setTimeout(tryMarkAsRead, 0);
-    }
-};
+
+        // -------- typing --------
+        if (data.type === 'typing' && data.username !== currentUser) {
+            typingIndicator.textContent = data.is_typing
+                ? `${data.username} печатает...`
+                : '';
+            return;
+        }
+
+    // -------- read --------
+        if (data.type === 'messages_read' && data.message_ids) {
+            data.message_ids.forEach(id => {
+                const msg = document.querySelector(
+                    `.message.me[data-id="${id}"] .read-status`
+                );
+                if (msg) msg.textContent = '✔✔';
+            });
+            return;
+        }
+
+        // -------- like --------
+        if (data.type === 'like_update') {
+            const messageId = data.message_id;
+            console.log(window.CURRENT_USER_ID)
+            console.log(data.username)
+            // обновляем счётчик ВСЕМ
+            $('#actual-message-like-' + messageId).text(data.like_count);
+
+            // обновляем сердце ТОЛЬКО себе
+            if (data.username === window.CURRENT_USER_ID) {
+                const iconHtml = data.is_liked
+                    ? '<i class="fa-solid fa-heart" style="color:red;"></i>'
+                    : '<i class="fa-regular fa-heart"></i>';
+
+                $(`.message-like-btn[data-message-id="${messageId}"]`)
+                    .html(iconHtml);
+            }
+
+            return;
+        }
+
+        // -------- message --------
+        if (data.message) {
+            typingIndicator.textContent = '';
+            addMessage(data.sender, data.message, data.id);
+            setTimeout(tryMarkAsRead, 0);
+        }
+    };
+
+    initEditMessages(socket);
 
     input.addEventListener('input', () => {
         input.style.height = 'auto';

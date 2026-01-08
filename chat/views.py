@@ -119,24 +119,6 @@ def like_unlike_message(request, message_id):
 
 @require_POST
 @login_required
-def update_message(request, pk):
-    message = get_object_or_404(Message, id=pk, sender=request.user)
-    text = request.POST.get("text", "").strip()
-
-    if not text:
-        return JsonResponse({"status": "error", "message": "empty"})
-
-    message.text = text
-    message.save()
-
-    return JsonResponse({
-        "status": "success",
-        "text": message.text
-    })
-
-
-@require_POST
-@login_required
 def del_message(request, message_id):
     message = Message.objects.filter(
         id=message_id,
