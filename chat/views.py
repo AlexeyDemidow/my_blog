@@ -116,18 +116,3 @@ def like_unlike_message(request, message_id):
         'is_liked': is_liked,
         'like_count': message.message_likes.count()
     })
-
-@require_POST
-@login_required
-def del_message(request, message_id):
-    message = Message.objects.filter(
-        id=message_id,
-    ).first()
-    if not message:
-        return JsonResponse({'status': 'error', 'message': 'not found or forbidden'}, status=403)
-
-    message.delete()
-
-    return JsonResponse({
-        'status': 'success',
-    })

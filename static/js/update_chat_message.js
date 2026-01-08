@@ -49,3 +49,16 @@ function saveEditedMessage(socket, messageId) {
         text: newText
     }));
 }
+
+document.addEventListener('click', function (e) {
+    const btn = e.target.closest('.options-btn');
+
+    // Закрываем все меню
+    document.querySelectorAll('.message-options-menu')
+        .forEach(menu => menu.classList.remove('active'));
+
+    if (btn) {
+        e.stopPropagation();
+        btn.parentElement.classList.add('active');
+    }
+});

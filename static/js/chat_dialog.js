@@ -28,6 +28,20 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     };
 
+        // Клик на кнопку удаления
+    $(document).on('click', '.del-message-btn', function (e) {
+        e.preventDefault();
+
+        const messageId = $(this).data('message-id');
+
+        if (!confirm("Вы уверены, что хотите удалить сообщение?")) return;
+
+        socket.send(JSON.stringify({
+            type: "delete_message",
+            message_id: messageId
+        }));
+    });
+
     socket.onmessage = function (e) {
         const data = JSON.parse(e.data);
 
@@ -46,7 +60,11 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
 
-
+        if (data.type === "message_deleted") {
+            const messageDiv = document.querySelector(`.message[data-id="${data.message_id}"]`);
+            if (messageDiv) messageDiv.remove();
+            return;
+        }
 
         // -------- typing --------
         if (data.type === 'typing' && data.username !== currentUser) {

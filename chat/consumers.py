@@ -64,6 +64,10 @@ class PrivateChatConsumer(AsyncWebsocketConsumer):
             await self.handle_typing(data)
             return
 
+        if data["type"] == "delete_message":
+            await self.delete_message(data)
+            return
+
         # ✅ 3. MESSAGE
         message_text = data.get('message', '').strip()
         if not message_text:
@@ -198,6 +202,42 @@ class PrivateChatConsumer(AsyncWebsocketConsumer):
             "message_id": event["message_id"],
             "text": event["text"],
             "username": event["username"],
+        }))
+
+    # ---------------------------
+    # Удаление сообщения
+    # ---------------------------
+    async def delete_message(self, data):
+        message_id = data.get("message_id")
+        user = self.scope["user"]
+
+        from chat.models import Message
+
+        try:
+            # Только автор может удалить своё сообщение
+            message = await database_sync_to_async(Message.objects.get)(id=message_id, sender=user)
+        except Message.DoesNotExist:
+            return
+
+        # Удаляем сообщение
+        await database_sync_to_async(message.delete)()
+
+        # Рассылаем всем участникам, чтобы они удалили сообщение из DOM
+        await self.channel_layer.group_send(
+            self.room_group_name,
+            {
+                "type": "message_deleted",
+                "message_id": message_id
+            }
+        )
+
+    # ---------------------------
+    # Обработчик события group_send
+    # ---------------------------
+    async def message_deleted(self, event):
+        await self.send(text_data=json.dumps({
+            "type": "message_deleted",
+            "message_id": event["message_id"]
         }))
 
     # ---------------------------
