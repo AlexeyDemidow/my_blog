@@ -4,8 +4,9 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.views import LoginView
 from django.core.paginator import Paginator
 from django.db.models import Count, Exists, OuterRef, Value
+from django.http import JsonResponse
 from django.urls import reverse_lazy
-from django.views.generic import CreateView, TemplateView, DetailView, UpdateView
+from django.views.generic import CreateView, TemplateView, DetailView, UpdateView, ListView
 
 from posts.models import Post, PostLike
 from users.forms import CustomUserCreationForm
@@ -109,3 +110,32 @@ class UpdateProfile(LoginRequiredMixin, UpdateView):
     def get_success_url(self):
         pk = self.kwargs['pk']
         return reverse_lazy('profile', kwargs={'pk': pk})
+
+
+class ProfileSearch(LoginRequiredMixin, ListView):
+    model = CustomUser
+    context_object_name = 'profiles'
+    template_name = 'search.html'
+
+
+def profile_search(request):
+
+    if request.method == 'POST' and request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        res = None
+        profile_name = request.POST.get('profile_name').capitalize()
+        querry = CustomUser.objects.filter(username__icontains=profile_name)
+        if len(querry) > 0 and len(profile_name) >= 0:
+            data = []
+            for prof in querry:
+                profile_view = {
+                    'id': prof.id,
+                    'username': prof.username,
+                    'bio': prof.bio,
+                    'pic': str(prof.avatar.url)
+                }
+                data.append(profile_view)
+            res = data
+        elif len(querry) == 0 and len(profile_name) > 0:
+            res = 'Ничего не найдено'
+        return JsonResponse({'data': res})
+    return JsonResponse({})

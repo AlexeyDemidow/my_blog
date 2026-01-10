@@ -1,7 +1,7 @@
 from django.conf import Settings
 from django.urls import path
 
-from users.views import SignUpView, SignUpSuccess, Login, Profile, UpdateProfile, ProfileSettings
+from users.views import SignUpView, SignUpSuccess, Login, Profile, UpdateProfile, ProfileSettings, ProfileSearch, profile_search
 from django.contrib.auth import views
 
 urlpatterns = [
@@ -16,5 +16,7 @@ urlpatterns = [
     path('password_reset/done/', views.PasswordResetDoneView.as_view(), name='password_reset_done'),  # Сигнал об успешном сбросе пароля
     path('reset/<uidb64>/<token>/', views.PasswordResetConfirmView.as_view(), name='password_reset_confirm'),  # Подтверждение сброса пароля
     path('reset/done/', views.PasswordResetCompleteView.as_view(), name='password_reset_complete'),  # Сброс пароля успешен
+    path('search/', ProfileSearch.as_view(), name='profile_search'),
+    path('search/search_result/', profile_search, name='profile_search_result'),
 
 ]
