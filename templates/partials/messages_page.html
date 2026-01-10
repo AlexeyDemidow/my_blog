@@ -1,0 +1,47 @@
+{% for msg in messages %}
+    <div class="message {% if msg.sender == request.user %}me{% endif %}" data-id="{{ msg.id }}">
+
+        {% if user.is_authenticated %}
+            <button class="message-like-btn" data-message-id="{{ msg.id }}">
+                {% if msg.is_liked %}
+                    <i class="fa-solid fa-heart" style="color:red;"></i>
+                {% else %}
+                    <i class="fa-regular fa-heart"></i>
+                {% endif %}
+            </button>
+        {% else %}
+            <i class="fa-regular fa-heart"></i>
+        {% endif %}
+
+        <span id="actual-message-like-{{ msg.id }}">
+            {{ msg.message_likes.count }}
+        </span>
+
+        <div class="text">
+            {{ msg.text }}
+            <span class="chat-time">
+                {{ msg.created_at }}
+            </span>
+            {% if msg.sender == request.user %}
+                <span class="read-status">
+                    {% if msg.is_read %}✔✔{% else %}✔{% endif %}
+                </span>
+            {% endif %}
+        </div>
+
+        {% if user.is_authenticated %}
+            <div class="message-options-menu" data-message-id="{{ msg.id }}">
+                <button class="options-btn">⋮</button>
+                <div class="dropdown">
+                    <a href="#" class="edit-message-btn" data-message-id="{{ msg.id }}">
+                        Редактировать сообщение
+                    </a>
+                    <button class="del-message-btn" data-message-id="{{ msg.id }}">
+                        Удалить сообщение
+                    </button>
+                </div>
+            </div>
+        {% endif %}
+
+    </div>
+{% endfor %}

@@ -1,8 +1,10 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.core.paginator import Paginator
 from django.db.models import Max, Count, Q, OuterRef, Subquery, Exists
 from django.http import HttpResponseForbidden, JsonResponse
 from django.shortcuts import redirect, get_object_or_404, render
 from django.contrib.auth.decorators import login_required
+from django.template.loader import render_to_string
 from django.utils import timezone
 from django.views.decorators.http import require_POST
 from django.views.generic import ListView
@@ -68,8 +70,6 @@ def dialog_view(request, dialog_id):
         is_read=False
     ).exclude(sender=request.user).update(is_read=True)
 
-    # messages = dialog.messages.select_related('sender')
-
     messages = Message.objects.filter(dialog=dialog).annotate(
         is_liked=Exists(
             MessageLike.objects.filter(
@@ -77,7 +77,9 @@ def dialog_view(request, dialog_id):
                 sender=request.user
             )
         )
-    )
+    ).order_by('-created_at')[:20]
+
+    messages = reversed(messages)
 
     return render(request, 'chat.html', {
         'dialog': dialog,
@@ -115,4 +117,34 @@ def like_unlike_message(request, message_id):
         'status': 'success',
         'is_liked': is_liked,
         'like_count': message.message_likes.count()
+    })
+
+@login_required
+def pag_messages(request, dialog_id):
+    dialog = get_object_or_404(Dialog, id=dialog_id, users=request.user)
+
+    page = int(request.GET.get('page', 1))
+    page_size = 20
+
+    messages_qs = (
+        Message.objects
+        .filter(dialog=dialog)
+        .select_related('sender')
+        .order_by('-created_at')
+    )
+
+    paginator = Paginator(messages_qs, page_size)
+    messages = paginator.get_page(page)
+
+    html = render_to_string(
+        'partials/messages_page.html',
+        {
+            'messages': reversed(messages),
+            'request': request
+        }
+    )
+
+    return JsonResponse({
+        'html': html,
+        'has_next': messages.has_next()
     })

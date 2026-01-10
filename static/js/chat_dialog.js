@@ -263,8 +263,41 @@ document.addEventListener('DOMContentLoaded', function() {
         }));
     });
 
+    let page = 1;
+    let loading = false;
+    let hasNext = true;
 
+    messagesDiv.addEventListener('scroll', () => {
+        if (messagesDiv.scrollTop === 0 && !loading && hasNext) {
+            loadMoreMessages();
+        }
+    });
 
+    function loadMoreMessages() {
+        loading = true;
+        page++;
+
+        const oldHeight = messagesDiv.scrollHeight;
+
+        fetch(`/chat/dialog/${dialogId}/messages/?page=${page}`)
+            .then(res => res.json())
+            .then(data => {
+                if (!data.html.trim()) {
+                    hasNext = false;
+                    return;
+                }
+
+                messagesDiv.insertAdjacentHTML('afterbegin', data.html);
+
+                const newHeight = messagesDiv.scrollHeight;
+                messagesDiv.scrollTop = newHeight - oldHeight;
+
+                hasNext = data.has_next;
+            })
+            .finally(() => {
+                loading = false;
+            });
+    }
 })
 
 
