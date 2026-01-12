@@ -313,11 +313,8 @@ class PrivateChatConsumer(AsyncWebsocketConsumer):
 
 
 class ChatListConsumer(AsyncWebsocketConsumer):
-    group_name = None  # 🔑 ОБЯЗАТЕЛЬНО
-
     async def connect(self):
         user = self.scope['user']
-
         if user.is_anonymous:
             await self.close()
             return
@@ -332,17 +329,42 @@ class ChatListConsumer(AsyncWebsocketConsumer):
         await self.accept()
 
     async def disconnect(self, close_code):
-        if self.group_name:  # 🔒 защита
-            await self.channel_layer.group_discard(
-                self.group_name,
-                self.channel_name
-            )
+        await self.channel_layer.group_discard(
+            self.group_name,
+            self.channel_name)
+
+    # async def chat_notification(self, event):
+    #     await self.send(text_data=json.dumps(event))
+
+    async def chat_typing(self, event):
+        await self.send(text_data=json.dumps({
+            'type': 'chat_typing',
+            'dialog_id': event['dialog_id'],
+            'username': event['username'],
+            'is_typing': event['is_typing']
+        }))
+
+    async def new_message(self, event):
+        await self.send(text_data=json.dumps({
+            'type': 'new_message',
+            'dialog_id': event['dialog_id'],
+            'message': event['message'],
+            'sender': event['sender'],
+            'from_me': False
+        }))
+
+    async def messages_read(self, event):
+        await self.send(text_data=json.dumps({
+            'type': 'messages_read',
+            'dialog_id': event['dialog_id'],
+            'message_ids': event.get('message_ids', [])
+        }))
 
 
 ONLINE_USERS_KEY = 'online_users'
 
 class OnlineStatusConsumer(AsyncWebsocketConsumer):
-    group_name = None
+
     async def connect(self):
         user = self.scope['user']
         if user.is_anonymous:
@@ -384,34 +406,33 @@ class OnlineStatusConsumer(AsyncWebsocketConsumer):
         }))
 
     async def disconnect(self, close_code):
-        if self.group_name:
-            count = cache.get(self.cache_key, 1) - 1
+        count = cache.get(self.cache_key, 1) - 1
 
-            if count <= 0:
-                cache.delete(self.cache_key)
+        if count <= 0:
+            cache.delete(self.cache_key)
 
-                # ❗ сохраняем last_seen
-                await self.set_last_seen()
+            # ❗ сохраняем last_seen
+            await self.set_last_seen()
 
-                online_users = set(cache.get(ONLINE_USERS_KEY, []))
-                online_users.discard(self.user.id)
-                cache.set(ONLINE_USERS_KEY, list(online_users))
+            online_users = set(cache.get(ONLINE_USERS_KEY, []))
+            online_users.discard(self.user.id)
+            cache.set(ONLINE_USERS_KEY, list(online_users))
 
-                await self.channel_layer.group_send(
-                    self.group_name,
-                    {
-                        'type': 'user_offline',
-                        'user_id': self.user.id,
-                        'last_seen': timezone.now().isoformat(),
-                    }
-                )
-            else:
-                cache.set(self.cache_key, count)
-
-            await self.channel_layer.group_discard(
+            await self.channel_layer.group_send(
                 self.group_name,
-                self.channel_name
+                {
+                    'type': 'user_offline',
+                    'user_id': self.user.id,
+                    'last_seen': timezone.now().isoformat(),
+                }
             )
+        else:
+            cache.set(self.cache_key, count)
+
+        await self.channel_layer.group_discard(
+            self.group_name,
+            self.channel_name
+        )
 
     async def user_online(self, event):
         await self.send(text_data=json.dumps(event))

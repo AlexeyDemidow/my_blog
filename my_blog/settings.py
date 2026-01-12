@@ -50,7 +50,6 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
     'channels',
-    'social_django',
 
     'users',
     'posts',
@@ -80,9 +79,6 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
-
-                'social_django.context_processors.backends',
-                'social_django.context_processors.login_redirect',
             ],
         },
     },
@@ -115,11 +111,6 @@ DATABASES = {
 
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
-
-AUTHENTICATION_BACKENDS = (
-    'social_core.backends.google.GoogleOAuth2',
-    'django.contrib.auth.backends.ModelBackend',
-)
 
 AUTH_USER_MODEL = 'users.CustomUser'
 AUTH_PASSWORD_VALIDATORS = [
@@ -164,34 +155,6 @@ MEDIA_ROOT = BASE_DIR / 'media'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-
-# SOCIAL_AUTH_PIPELINE = (
-#     # 1. Получаем данные от Google
-#     'social_core.pipeline.social_auth.social_details',
-#     'social_core.pipeline.social_auth.social_uid',
-#
-#     # 2. Проверки
-#     'social_core.pipeline.social_auth.auth_allowed',
-#
-#     # 3. 🔑 КЛЮЧЕВОЕ МЕСТО
-#     'social_core.pipeline.social_auth.associate_by_email',
-#
-#     # 4. Создаём связь User ↔ Google
-#     'social_core.pipeline.social_auth.create_social_user',
-#
-#     # 5. Загружаем доп. данные
-#     'social_core.pipeline.social_auth.load_extra_data',
-#
-#     # 6. Обновляем пользователя
-#     'social_core.pipeline.user.user_details',
-# )
-
-
-
-SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = '1012994602326-b5cqkroihgbm95ehuk9rt3ab1dnu4c9f.apps.googleusercontent.com'
-SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = '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'
-SOCIAL_AUTH_ASSOCIATE_BY_EMAIL = True
-SOCIAL_AUTH_URL_NAMESPACE = 'social'
 
 LOGIN_REDIRECT_URL = 'home'
 LOGOUT_REDIRECT_URL = 'home'
