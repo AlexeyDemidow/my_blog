@@ -26,6 +26,21 @@
         <p>О себе: {{ c_user.bio }}</p>
     </div>
 
+    {% if user != c_user %}
+        <button id="follow-btn" data-user-id="{{ c_user.id }}">
+            {% if is_following %}
+                Отписаться
+            {% else %}
+                Подписаться
+            {% endif %}
+        </button>
+        <span id="followers-count">
+            {{ c_user.followers.count }} Подписок
+        </span>
+    {% endif %}
+
+
+
     {% if user == c_user %}
         <a href="{% url 'post_create' %}" class="nav-btn">Создать пост</a>
     {% else %}
