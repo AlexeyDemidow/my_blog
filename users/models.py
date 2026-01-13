@@ -1,4 +1,5 @@
 from django.contrib.auth.base_user import BaseUserManager
+from django.core.exceptions import ValidationError
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.utils.translation import gettext_lazy as _
@@ -80,6 +81,10 @@ class UserFollow(models.Model):
             models.Index(fields=['follower']),
             models.Index(fields=['following']),
         ]
+
+    def clean(self):
+        if self.follower == self.following:
+            raise ValidationError("Нельзя подписаться на себя")
 
     def __str__(self):
         return f'{self.follower} → {self.following}'
