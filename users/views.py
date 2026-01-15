@@ -185,3 +185,11 @@ class Subscriptions(LoginRequiredMixin, ListView):
         return UserFollow.objects.filter(
             follower=self.request.user)
 
+
+class Subscribers(LoginRequiredMixin, ListView):
+    model = UserFollow
+    context_object_name = 'subscribers'
+    template_name = 'subscribers.html'
+
+    def get_queryset(self):
+        return CustomUser.objects.filter(following__following=self.request.user)
