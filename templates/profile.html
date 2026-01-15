@@ -9,7 +9,6 @@
     <div class="form">
 
         <div class="user-status" data-user-id="{{ c_user.id }}">
-{#            <span class="status-text">оффлайн</span>#}
 
             <span class="status-text">
             {% if c_user.id in online_users %}
@@ -37,9 +36,10 @@
         <span id="followers-count">
             {{ c_user.followers.count }} Подписок
         </span>
+    {% else %}
+        <a href="{% url 'subscriptions' c_user.id %}" class="nav-btn">Подписки</a>
+        <a href="{% url 'subscribers' c_user.id %}" class="nav-btn">Подписчики</a>
     {% endif %}
-
-
 
     {% if user == c_user %}
         <a href="{% url 'post_create' %}" class="nav-btn">Создать пост</a>

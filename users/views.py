@@ -175,3 +175,13 @@ def toggle_follow(request, pk):
         'is_following': is_following,
         'followers_count': target.followers.count()
     })
+
+class Subscriptions(LoginRequiredMixin, ListView):
+    model = UserFollow
+    context_object_name = 'subscriptions'
+    template_name = 'subscriptions.html'
+
+    def get_queryset(self):
+        return UserFollow.objects.filter(
+            follower=self.request.user)
+
