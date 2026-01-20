@@ -135,7 +135,7 @@ def profile_search(request):
         res = None
         profile_name = request.POST.get('profile_name').capitalize()
         querry = CustomUser.objects.filter(username__icontains=profile_name)
-        if len(querry) > 0 and len(profile_name) >= 0:
+        if len(querry) > 0 and len(profile_name) > 0:
             data = []
             for prof in querry:
                 profile_view = {
@@ -146,7 +146,7 @@ def profile_search(request):
                 }
                 data.append(profile_view)
             res = data
-        elif len(querry) == 0 and len(profile_name) > 0:
+        else:
             res = 'Ничего не найдено'
         return JsonResponse({'data': res})
     return JsonResponse({})

@@ -142,16 +142,6 @@
 </div>
 <div class="chat-list">
     <div id="result-box">
-        {% for item in profiles %}
-            <div class="catalog">
-                <div class="food_container">
-                    <a href="{% url 'profile_search' %}">
-                        <p> <img src="{{ item.avatar.url }}" style="width: 60px"> </p>
-                        <p>{{ item.username }}</p>
-                    </a>
-                </div>
-            </div>
-        {% endfor %}
     </div>
 </div>
 <script>
