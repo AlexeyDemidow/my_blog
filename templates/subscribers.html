@@ -137,18 +137,19 @@
 <div class="w-100 text-center">
     <form autocomplete="off" id="search-form">
         {% csrf_token %}
-         <input id="search-input" class="p-3 w-50 search" placeholder="Найти пользователя">
+         <input id="subscribers-search-input" class="p-3 w-50 search" placeholder="Найти пользователя">
     </form>
 </div>
 
 <div class="chat-list">
-    <div id="result-box">
+    <div id="subscribers-result-box">
         {% for item in subscribers %}
             <div class="catalog">
                 <div class="food_container">
-                    <a href="{% url 'profile_search' %}">
+                    <a href="#">
                         <p> <img src="{{ item.avatar.url }}" style="width: 60px"> </p>
                         <p>{{ item.username }}</p>
+                        <p>{{ item.bio }}</p>
                     </a>
                 </div>
             </div>

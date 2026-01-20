@@ -2,7 +2,7 @@ from django.conf import Settings
 from django.urls import path
 
 from users.views import SignUpView, SignUpSuccess, Login, Profile, UpdateProfile, ProfileSettings, ProfileSearch, \
-    profile_search, toggle_follow, Subscriptions, Subscribers
+    profile_search, toggle_follow, Subscriptions, Subscribers, subscribers_search
 from django.contrib.auth import views
 
 urlpatterns = [
@@ -20,6 +20,7 @@ urlpatterns = [
     path('reset/done/', views.PasswordResetCompleteView.as_view(), name='password_reset_complete'),  # Сброс пароля успешен
     path('search/', ProfileSearch.as_view(), name='profile_search'),
     path('search/search_result/', profile_search, name='profile_search_result'),
+    path('<int:pk>/subscribers/subscribers_search_result/', subscribers_search, name='subscribers_search_result'),
     path('<int:pk>/subscriptions/', Subscriptions.as_view(), name='subscriptions'),
     path('<int:pk>/subscribers/', Subscribers.as_view(), name='subscribers'),
 

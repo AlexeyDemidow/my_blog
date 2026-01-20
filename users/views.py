@@ -193,3 +193,26 @@ class Subscribers(LoginRequiredMixin, ListView):
 
     def get_queryset(self):
         return CustomUser.objects.filter(following__following=self.request.user)
+
+
+def subscribers_search(request, pk):
+
+    if request.method == 'POST' and request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        res = None
+        profile_name = request.POST.get('profile_name').capitalize()
+        querry = CustomUser.objects.filter(following__following=request.user, username__icontains=profile_name)
+        if len(querry) > 0 and len(profile_name) >= 0:
+            data = []
+            for prof in querry:
+                profile_view = {
+                    'id': prof.id,
+                    'username': prof.username,
+                    'bio': prof.bio,
+                    'pic': str(prof.avatar.url)
+                }
+                data.append(profile_view)
+            res = data
+        else:
+            res = 'Ничего не найдено'
+        return JsonResponse({'data': res})
+    return JsonResponse({})
