@@ -146,7 +146,7 @@
         {% for item in subscribers %}
             <div class="catalog">
                 <div class="food_container">
-                    <a href="#">
+                    <a href="{% url 'profile' item.id %}">
                         <p> <img src="{{ item.avatar.url }}" style="width: 60px"> </p>
                         <p>{{ item.username }}</p>
                         <p>{{ item.bio }}</p>
