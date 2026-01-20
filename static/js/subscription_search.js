@@ -20,7 +20,7 @@ window.addEventListener('load', function() {
                         resultsBox.innerHTML += `
                             <div class="catalog">
                                 <div class="food_container">
-                                    <a href="${profile_name.id}/">
+                                    <a href="/users/${profile_name.id}/">
                                         <p><img src="${ profile_name.pic }" style="width: 60px"></p>
                                         <p>${ profile_name.username }</p>
                                         <p>${ profile_name.bio }</p>

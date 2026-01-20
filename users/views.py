@@ -227,7 +227,7 @@ def subscriptions_search(request, pk):
             data = []
             for prof in querry:
                 profile_view = {
-                    'id': prof.id,
+                    'id': prof.following.id,
                     'username': prof.following.username,
                     'bio': prof.following.bio,
                     'pic': str(prof.following.avatar.url)
