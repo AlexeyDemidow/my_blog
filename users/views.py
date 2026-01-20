@@ -182,8 +182,7 @@ class Subscriptions(LoginRequiredMixin, ListView):
     template_name = 'subscriptions.html'
 
     def get_queryset(self):
-        return UserFollow.objects.filter(
-            follower=self.request.user)
+        return UserFollow.objects.filter(follower=self.request.user)
 
 
 class Subscribers(LoginRequiredMixin, ListView):
@@ -209,6 +208,29 @@ def subscribers_search(request, pk):
                     'username': prof.username,
                     'bio': prof.bio,
                     'pic': str(prof.avatar.url)
+                }
+                data.append(profile_view)
+            res = data
+        else:
+            res = 'Ничего не найдено'
+        return JsonResponse({'data': res})
+    return JsonResponse({})
+
+
+def subscriptions_search(request, pk):
+
+    if request.method == 'POST' and request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        res = None
+        profile_name = request.POST.get('profile_name').capitalize()
+        querry = UserFollow.objects.filter(follower=request.user, following__username__icontains=profile_name)
+        if len(querry) > 0 and len(profile_name) >= 0:
+            data = []
+            for prof in querry:
+                profile_view = {
+                    'id': prof.id,
+                    'username': prof.following.username,
+                    'bio': prof.following.bio,
+                    'pic': str(prof.following.avatar.url)
                 }
                 data.append(profile_view)
             res = data
