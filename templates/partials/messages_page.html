@@ -39,6 +39,9 @@
                     <button class="del-message-btn" data-message-id="{{ msg.id }}">
                         Удалить сообщение
                     </button>
+                    <button class="pin-message-btn" data-message-id="{{ msg.id }}" data-pin-url="{% url 'toggle_message_pin' msg.id msg. %}">
+                        Закрепить сообщение
+                    </button>
                 </div>
             </div>
         {% endif %}
