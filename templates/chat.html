@@ -133,6 +133,18 @@
         transform: scale(1.3);
     }
 
+    #pinned-messages {
+        border-bottom: 1px solid #ddd;
+        padding-bottom: 8px;
+        margin-bottom: 8px;
+    }
+
+    .message.pinned .text {
+        background: #fff3cd;
+        border: 1px solid #ffeeba;
+    }
+
+
 </style>
 
 <div class="chat-container">
@@ -141,8 +153,23 @@
     </div>
 
     <div class="chat-messages" id="chat-messages">
-        {% include "partials/messages_page.html" %}
+
+        {% for msg in messages %}
+            <div id="pinned-messages">
+                {% if msg.is_pinned %}
+                    {% include "partials/messages_page.html" %}
+                {% endif %}
+            </div>
+
+            <div id="normal-messages">
+                {% if not msg.is_pinned %}
+                    {% include "partials/messages_page.html" %}
+                {% endif %}
+            </div>
+        {% endfor %}
+
     </div>
+
 
     <div class="typing-indicator" id="typing-indicator"></div>
 
@@ -404,6 +431,7 @@
 <script>
     window.DIALOG_ID = {{ dialog.id }};
     window.CURRENT_USER_ID = "{{ request.user.username }}";
+    window.CSRF_TOKEN = "{{ csrf_token }}";
 </script>
 
 {% load static %}
