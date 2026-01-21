@@ -103,6 +103,23 @@ def toggle_pin(request, dialog_id):
     })
 
 @login_required
+@require_POST
+def toggle_message_pin(request, dialog_id, message_id):
+    message = get_object_or_404(
+        Message,
+        id=message_id,
+        dialog_id=dialog_id
+    )
+    message.is_pinned = not message.is_pinned
+    message.pinned_at = timezone.now() if message.is_pinned else None
+    message.save()
+
+    return JsonResponse({
+        'is_pinned': message.is_pinned
+    })
+
+
+@login_required
 def like_unlike_message(request, message_id):
     message = get_object_or_404(Message, id=message_id)
 
