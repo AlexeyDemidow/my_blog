@@ -148,7 +148,7 @@ def pag_messages(request, dialog_id):
 
     messages_qs = (
         Message.objects
-        .filter(dialog=dialog)
+        .filter(dialog=dialog, is_pinned=False)
         .select_related('sender')
         .order_by('-created_at')
     )
