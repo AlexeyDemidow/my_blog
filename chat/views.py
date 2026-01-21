@@ -77,7 +77,10 @@ def dialog_view(request, dialog_id):
                 sender=request.user
             )
         )
-    ).order_by('-created_at')[:20]
+    ).order_by(
+        '-is_pinned',
+        '-pinned_at',
+        '-created_at')[:20]
 
     messages = reversed(messages)
 
