@@ -24,6 +24,9 @@ class Message(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     is_read = models.BooleanField(default=False)
 
+    is_pinned = models.BooleanField(default=False)
+    pinned_at = models.DateTimeField(null=True, blank=True)
+
     def __str__(self):
         return f'{self.sender}: {self.text[:20]}'
 
