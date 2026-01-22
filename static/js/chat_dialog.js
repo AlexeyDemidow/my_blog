@@ -12,6 +12,8 @@ document.addEventListener('DOMContentLoaded', function() {
     );
 
     const messagesDiv = document.getElementById('chat-messages');
+    const normalMessages = document.getElementById('normal-messages');
+
     const typingIndicator = document.getElementById('typing-indicator');
     const input = document.getElementById('message-input');
     const sendBtn = document.getElementById('send-btn');
@@ -268,7 +270,7 @@ document.addEventListener('DOMContentLoaded', function() {
     let hasNext = true;
 
     messagesDiv.addEventListener('scroll', () => {
-        if (messagesDiv.scrollTop === 0 && !loading && hasNext) {
+        if (messagesDiv.scrollTop <= 0 && !loading && hasNext) {
             loadMoreMessages();
         }
     });
@@ -277,27 +279,32 @@ document.addEventListener('DOMContentLoaded', function() {
         loading = true;
         page++;
 
-        const oldHeight = messagesDiv.scrollHeight;
+        // ❗ сохраняем высоту ТОЛЬКО normal-messages
+        const oldHeight = normalMessages.scrollHeight;
 
         fetch(`/chat/dialog/${dialogId}/messages/?page=${page}`)
             .then(res => res.json())
             .then(data => {
-                if (!data.html.trim()) {
+                if (!data.html || !data.html.trim()) {
                     hasNext = false;
                     return;
                 }
 
-                messagesDiv.insertAdjacentHTML('afterbegin', data.html);
+                // ⬅️ prepend СТАРЫХ сообщений
+                normalMessages.insertAdjacentHTML('afterbegin', data.html);
 
-                const newHeight = messagesDiv.scrollHeight;
-                messagesDiv.scrollTop = newHeight - oldHeight;
+                // ❗ корректируем scroll, чтобы не прыгал
+                const newHeight = normalMessages.scrollHeight;
+                messagesDiv.scrollTop += (newHeight - oldHeight);
 
                 hasNext = data.has_next;
             })
+            .catch(err => console.error('Pagination error:', err))
             .finally(() => {
                 loading = false;
             });
     }
+
 })
 
 

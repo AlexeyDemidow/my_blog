@@ -152,23 +152,29 @@
         Чат
     </div>
 
+{#    <div class="chat-messages" id="chat-messages">#}
+{##}
+{#        {% for msg in messages %}#}
+{#            <div id="pinned-messages">#}
+{#                {% if msg.is_pinned %}#}
+{#                    {% include "partials/messages_page.html" %}#}
+{#                {% endif %}#}
+{#            </div>#}
+{##}
+{#            <div id="normal-messages">#}
+{#                {% if not msg.is_pinned %}#}
+{#                    {% include "partials/messages_page.html" %}#}
+{#                {% endif %}#}
+{#            </div>#}
+{#        {% endfor %}#}
+{##}
+{#    </div>#}
+
     <div class="chat-messages" id="chat-messages">
-
-        {% for msg in messages %}
-            <div id="pinned-messages">
-                {% if msg.is_pinned %}
-                    {% include "partials/messages_page.html" %}
-                {% endif %}
-            </div>
-
-            <div id="normal-messages">
-                {% if not msg.is_pinned %}
-                    {% include "partials/messages_page.html" %}
-                {% endif %}
-            </div>
-        {% endfor %}
-
+        <div id="pinned-messages"></div>
+        <div id="normal-messages">{% include "partials/messages_page.html" %}</div>
     </div>
+
 
 
     <div class="typing-indicator" id="typing-indicator"></div>
