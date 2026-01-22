@@ -70,11 +70,24 @@ def dialog_view(request, dialog_id):
         is_read=False
     ).exclude(sender=request.user).update(is_read=True)
 
-    messages = Message.objects.filter(dialog=dialog).annotate(
+    pinned_messages = Message.objects.filter(dialog=dialog, is_pinned=True).annotate(
         is_liked=Exists(
             MessageLike.objects.filter(
                 message=OuterRef('pk'),
-                sender=request.user
+                sender=request.user,
+            )
+        )
+    ).order_by(
+        '-is_pinned',
+        '-pinned_at',
+        '-created_at')[:20]
+
+
+    messages = Message.objects.filter(dialog=dialog, is_pinned=False).annotate(
+        is_liked=Exists(
+            MessageLike.objects.filter(
+                message=OuterRef('pk'),
+                sender=request.user,
             )
         )
     ).order_by(
@@ -83,10 +96,12 @@ def dialog_view(request, dialog_id):
         '-created_at')[:20]
 
     messages = reversed(messages)
+    pinned_messages = reversed(pinned_messages)
 
     return render(request, 'chat.html', {
         'dialog': dialog,
-        'messages': messages
+        'messages': messages,
+        'pinned_messages': pinned_messages,
     })
 
 @login_required

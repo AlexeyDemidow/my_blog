@@ -677,3 +677,22 @@ button[type="submit"]:hover {
 .message-options-menu.active .dropdown {
     display: block;
 }
+
+
+#pinned-wrapper {
+    background: #fff;
+    border-bottom: 1px solid #ddd;
+    padding: 6px 10px;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+#pinned-messages .message {
+    margin-bottom: 6px;
+}
+
+.message.pinned .text {
+    background: #fff3cd;
+    border: 1px solid #ffeeba;
+}

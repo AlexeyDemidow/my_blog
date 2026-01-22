@@ -170,9 +170,20 @@
 {##}
 {#    </div>#}
 
+    <div id="pinned-wrapper">
+        <div id="pinned-messages">
+            {% for msg in pinned_messages %}
+                {% include "partials/messages_page.html" %}
+            {% endfor %}
+        </div>
+    </div>
+
     <div class="chat-messages" id="chat-messages">
-        <div id="pinned-messages"></div>
-        <div id="normal-messages">{% include "partials/messages_page.html" %}</div>
+        <div id="normal-messages">
+            {% for msg in messages %}
+                {% include "partials/messages_page.html" %}
+            {% endfor %}
+        </div>
     </div>
 
 
