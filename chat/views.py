@@ -105,6 +105,41 @@ def dialog_view(request, dialog_id):
         'pinned_messages': pinned_messages,
     })
 
+
+@login_required
+@require_POST
+def send_post(request, post_id, dialog_id):
+    dialog = Dialog.objects.get(id=dialog_id)
+    post = get_object_or_404(Post, id=post_id)
+
+    if request.user not in dialog.users.all():
+        return JsonResponse({'status': 'error'}, status=403)
+
+    new_message = Message.objects.create(
+        sender=request.user,
+        dialog=dialog,
+        sent_post=post,
+        text=request.POST.get("text", "").strip()
+    )
+    print(post.content)
+
+    return JsonResponse({
+        'status': 'success',
+        'id': new_message.id,
+        'author': new_message.sender.username,
+        'text': new_message.text,
+        'created_at': new_message.created_at.strftime('%H:%M'),
+
+        # данные поста
+        'post': {
+            'id': post.id,
+            'avatar': str(post.author.avatar),
+            'author': post.author.username,
+            'content': post.content,
+            'images': [img.image.url for img in post.images.all()]
+        }
+    })
+
 @login_required
 @require_POST
 def toggle_pin(request, dialog_id):
