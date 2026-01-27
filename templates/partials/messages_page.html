@@ -11,21 +11,35 @@
         <i class="fa-regular fa-heart"></i>
     {% endif %}
 
-        <span id="actual-message-like-{{ msg.id }}">
-            {{ msg.message_likes.count }}
-        </span>
+    <span id="actual-message-like-{{ msg.id }}">
+        {{ msg.message_likes.count }}
+    </span>
 
-        <div class="text">
-            {{ msg.text }}
-            <span class="chat-time">
-                {{ msg.created_at }}
+    {% if msg.sent_post %}
+        {% with post=msg.sent_post.original_post|default:msg.sent_post %}
+            <div class="text sent-post">
+                <strong>{{ post.author.username }}</strong>
+                <p>{{ post.content }}</p>
+
+                {% for img in post.images.all %}
+                    <img src="{{ img.image.url }}" style="max-width:200px;">
+                {% endfor %}
+            </div>
+        {% endwith %}
+    {% endif %}
+
+
+    <div class="text">
+        {{ msg.text }}
+        <span class="chat-time">
+            {{ msg.created_at }}
+        </span>
+        {% if msg.sender == request.user %}
+            <span class="read-status">
+                {% if msg.is_read %}✔✔{% else %}✔{% endif %}
             </span>
-            {% if msg.sender == request.user %}
-                <span class="read-status">
-                    {% if msg.is_read %}✔✔{% else %}✔{% endif %}
-                </span>
-            {% endif %}
-        </div>
+        {% endif %}
+    </div>
 
     {% if user.is_authenticated %}
         <div class="message-options-menu" data-message-id="{{ msg.id }}">
