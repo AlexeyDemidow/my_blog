@@ -10,5 +10,5 @@ urlpatterns = [
     path('like_unlike_message/<int:message_id>/', views.like_unlike_message, name='like_unlike_message'),
     path('dialog/<int:dialog_id>/messages/', views.pag_messages, name='pag_messages'),
 
-
+    path('send_post/<int:post_id>/<int:dialog_id>/', views.send_post, name='send_post'),
 ]
