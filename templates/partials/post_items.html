@@ -63,60 +63,92 @@
                 {% endfor %}
             {% endif %}
         </div>
-        <!-- Лайки -->
-        {% if user.is_authenticated %}
-            {% if post.is_liked %}
-                <button class="like-btn" data-post-id="{{ post.id }}">
-                    <i class="fa-solid fa-heart" style="color:red;"></i>
-                </button>
+        <div>
+            <!-- Лайки -->
+            {% if user.is_authenticated %}
+                {% if post.is_liked %}
+                    <button class="like-btn" data-post-id="{{ post.id }}">
+                        <i class="fa-solid fa-heart" style="color:red;"></i>
+                    </button>
+                {% else %}
+                    <button class="like-btn" data-post-id="{{ post.id }}">
+                        <i class="fa-regular fa-heart"></i>
+                    </button>
+                {% endif %}
             {% else %}
-                <button class="like-btn" data-post-id="{{ post.id }}">
-                    <i class="fa-regular fa-heart"></i>
-                </button>
+                <i class="fa-regular fa-heart"></i>
             {% endif %}
-        {% else %}
-            <i class="fa-regular fa-heart"></i>
-        {% endif %}
 
-        <!-- Счётчик лайков -->
-        <span id="like-actual-{{ post.id }}">{{ post.likes.count }}</span>
+            <!-- Счётчик лайков -->
+            <span id="like-actual-{{ post.id }}">{{ post.likes.count }}</span>
 
-        <!-- Счетчик комментариев -->
-        <i class="fa-regular fa-comment"></i>
-        <span id="comment-count-{{ post.id }}" data-post-id="{{ post.id }}">{{ post.comments.count }}</span>
+            <!-- Счетчик комментариев -->
+            <i class="fa-regular fa-comment"></i>
+            <span id="comment-count-{{ post.id }}" data-post-id="{{ post.id }}">{{ post.comments.count }}</span>
 
-        <!-- Репосты -->
-        {% if not post.original_post %}
-            {% if user.is_authenticated and user != post.author%}
-                <button class="repost-btn" data-post-id="{{ post.id }}">
+            <!-- Репосты -->
+            {% if not post.original_post %}
+                {% if user.is_authenticated and user != post.author%}
+                    <button class="repost-btn" data-post-id="{{ post.id }}">
+                        <i class="fa-solid fa-retweet"></i>
+                    </button>
+                    <span id="repost-count-{{ post.id }}">{{ post.reposts.count }}</span>
+                {% else %}
                     <i class="fa-solid fa-retweet"></i>
-                </button>
-                <span id="repost-count-{{ post.id }}">{{ post.reposts.count }}</span>
+                    <span id="repost-count-{{ post.id }}">{{ post.reposts.count }}</span>
+                {% endif %}
             {% else %}
                 <i class="fa-solid fa-retweet"></i>
                 <span id="repost-count-{{ post.id }}">{{ post.reposts.count }}</span>
             {% endif %}
-        {% else %}
-            <i class="fa-solid fa-retweet"></i>
-            <span id="repost-count-{{ post.id }}">{{ post.reposts.count }}</span>
-        {% endif %}
-    </div>
 
-    <div id="repostModal" class="repost-modal">
-        <div class="repost-modal-content">
-
-            <span class="repost-close">&times;</span>
-
-            <h3>Репост</h3>
-            <!-- Оригинальный пост -->
-            <div id="repost-original" class="repost-original-block"></div>
-            <!-- Поле для своей подписи -->
-            <textarea id="repost-text" class="repost-textarea" placeholder="Добавьте свою подпись..."></textarea>
-            <button id="send-repost-btn" class="repost-send-btn" data-post-id="{{ post.id }}">
-                Репост
-            </button>
-
+            <!-- Поделиться -->
+            {% if user.is_authenticated %}
+                <button class="sendPost-btn" data-post-id="{{ post.id }}">
+                    <i class="fa-solid fa-retweet"></i>
+                </button>
+            {% endif %}
         </div>
     </div>
 
+
+
 {% endfor %}
+
+<div id="repostModal" class="repost-modal">
+    <div class="repost-modal-content">
+
+        <span class="repost-close">&times;</span>
+
+        <h3>Репост</h3>
+        <!-- Оригинальный пост -->
+        <div id="repost-original" class="repost-original-block"></div>
+        <!-- Поле для своей подписи -->
+        <textarea id="repost-text" class="repost-textarea" placeholder="Добавьте свою подпись..."></textarea>
+        <button id="send-repost-btn" class="repost-send-btn" data-post-id="{{ post.id }}">
+            Репост
+        </button>
+
+    </div>
+</div>
+
+<div id="sendPostModal" class="sendPost-modal">
+    <div class="sendPost-modal-content">
+
+        <span class="sendPost-close">&times;</span>
+
+        <h3>Поделиться</h3>
+
+        <div id="sendPost-original"></div>
+
+        <select id="sendPost-dialog" class="sendPost-select">
+            <option value="">Выберите диалог</option>
+        </select>
+
+        <textarea id="sendPost-text"></textarea>
+
+        <button id="sendPost-confirm-btn" data-post-id="{{ post.id }}">
+            Поделиться
+        </button>
+    </div>
+</div>
