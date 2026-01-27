@@ -1,17 +1,15 @@
-{#{% for msg in messages %}#}
-    <div class="message {% if msg.sender == request.user %}me{% endif %}" data-id="{{ msg.id }}">
-
-        {% if user.is_authenticated %}
-            <button class="message-like-btn" data-message-id="{{ msg.id }}">
-                {% if msg.is_liked %}
-                    <i class="fa-solid fa-heart" style="color:red;"></i>
-                {% else %}
-                    <i class="fa-regular fa-heart"></i>
-                {% endif %}
-            </button>
-        {% else %}
-            <i class="fa-regular fa-heart"></i>
-        {% endif %}
+<div class="message {% if msg.sender == request.user %}me{% endif %}" data-id="{{ msg.id }}">
+    {% if user.is_authenticated %}
+        <button class="message-like-btn" data-message-id="{{ msg.id }}">
+            {% if msg.is_liked %}
+                <i class="fa-solid fa-heart" style="color:red;"></i>
+            {% else %}
+                <i class="fa-regular fa-heart"></i>
+            {% endif %}
+        </button>
+    {% else %}
+        <i class="fa-regular fa-heart"></i>
+    {% endif %}
 
         <span id="actual-message-like-{{ msg.id }}">
             {{ msg.message_likes.count }}
@@ -29,22 +27,20 @@
             {% endif %}
         </div>
 
-        {% if user.is_authenticated %}
-            <div class="message-options-menu" data-message-id="{{ msg.id }}">
-                <button class="options-btn">⋮</button>
-                <div class="dropdown">
-                    <button class="edit-message-btn" data-message-id="{{ msg.id }}">
-                        Редактировать сообщение
-                    </button>
-                    <button class="del-message-btn" data-message-id="{{ msg.id }}">
-                        Удалить сообщение
-                    </button>
-                    <button class="pin-message-btn" data-message-id="{{ msg.id }}" data-pin-url="{% url 'toggle_message_pin' msg.dialog.id msg.id %}">
-                        Закрепить сообщение
-                    </button>
-                </div>
+    {% if user.is_authenticated %}
+        <div class="message-options-menu" data-message-id="{{ msg.id }}">
+            <button class="options-btn">⋮</button>
+            <div class="dropdown">
+                <button class="edit-message-btn" data-message-id="{{ msg.id }}">
+                    Редактировать сообщение
+                </button>
+                <button class="del-message-btn" data-message-id="{{ msg.id }}">
+                    Удалить сообщение
+                </button>
+                <button class="pin-message-btn" data-message-id="{{ msg.id }}" data-pin-url="{% url 'toggle_message_pin' msg.dialog.id msg.id %}">
+                    Закрепить сообщение
+                </button>
             </div>
-        {% endif %}
-
-    </div>
-{#{% endfor %}#}
+        </div>
+    {% endif %}
+</div>
