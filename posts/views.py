@@ -12,6 +12,7 @@ from django.views.generic import ListView, CreateView, UpdateView
 from django.template.defaultfilters import date as django_date
 from django.db.models import Exists, OuterRef, Prefetch, Count
 
+from chat.models import Dialog
 from posts.forms import PostCreationForm, PostImageFormSet
 from posts.models import Post, PostLike, Comment, PostImage, CommentLike
 from users.views import Profile
@@ -419,4 +420,20 @@ def pag_profile_posts(request, pk):
         "posts_html": html,
         "has_next": posts.has_next(),
         "next_page": posts.next_page_number() if posts.has_next() else None,
+    })
+
+@login_required
+def user_dialogs(request):
+    dialogs = Dialog.objects.filter(users=request.user)
+
+    return JsonResponse({
+        'dialogs': [
+            {
+                'id': d.id,
+                'title': ', '.join(
+                    u.username for u in d.users.exclude(id=request.user.id)
+                )
+            }
+            for d in dialogs
+        ]
     })
