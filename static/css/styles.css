@@ -375,7 +375,7 @@ button[type="submit"]:hover {
 /* Репост, модальное окно */
 
 /* Тёмный фон */
-.repost-modal {
+.repost-modal, .sendPost-modal {
     display: none;
     position: fixed;
     z-index: 9999;
@@ -389,7 +389,7 @@ button[type="submit"]:hover {
 }
 
 /* Белое окно */
-.repost-modal-content {
+.repost-modal-content, .sendPost-modal-content {
     background: #fff;
     width: 420px;
     padding: 25px;
@@ -399,7 +399,7 @@ button[type="submit"]:hover {
     position: relative;
 }
 
-.repost-close {
+.repost-close, .sendPost-close {
     position: absolute;
     right: 15px;
     top: 10px;
@@ -408,21 +408,21 @@ button[type="submit"]:hover {
 }
 
 /* Оригинальный пост */
-.repost-original-block {
+.repost-original-block, .sendPost-original-block {
     background: #fafafa;
     padding: 15px;
     border-radius: 10px;
     margin-bottom: 15px;
     border: 1px solid #e0e0e0;
 }
-.repost-original-block img {
+.repost-original-block img, .sendPost-original-block img {
     width: 100%;
     border-radius: 10px;
     margin-top: 10px;
 }
 
 /* Поле ввода */
-.repost-textarea {
+.repost-textarea, .sendPost-textarea {
     width: 100%;
     height: 90px;
     border-radius: 10px;
@@ -432,7 +432,7 @@ button[type="submit"]:hover {
 }
 
 /* Кнопка */
-.repost-send-btn {
+.repost-send-btn, .sendPost-send-btn {
     margin-top: 12px;
     width: 100%;
     background: #007bff;
@@ -445,7 +445,7 @@ button[type="submit"]:hover {
     transition: 0.2s;
 }
 
-.repost-send-btn:hover {
+.repost-send-btn, .sendPost-send-btn:hover {
     background: #0069d9;
 }
 
