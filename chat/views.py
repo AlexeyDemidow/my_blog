@@ -9,6 +9,7 @@ from django.utils import timezone
 from django.views.decorators.http import require_POST
 from django.views.generic import ListView
 
+from posts.models import Post
 from users.models import CustomUser
 from .models import Dialog, Message, MessageLike
 from .services import get_or_create_dialog
@@ -64,39 +65,39 @@ def start_dialog(request, user_id):
 
 @login_required
 def dialog_view(request, dialog_id):
-    dialog = Dialog.objects.get(id=dialog_id)
-    # помечаем сообщения как прочитанные
+    dialog = get_object_or_404(Dialog, id=dialog_id, users=request.user)
+
     dialog.messages.filter(
         is_read=False
     ).exclude(sender=request.user).update(is_read=True)
 
-    pinned_messages = Message.objects.filter(dialog=dialog, is_pinned=True).annotate(
-        is_liked=Exists(
-            MessageLike.objects.filter(
-                message=OuterRef('pk'),
-                sender=request.user,
+    base_qs = (
+        Message.objects
+        .filter(dialog=dialog)
+        .select_related(
+            'sender',
+            'sent_post',
+            'sent_post__author',
+            'sent_post__original_post',
+            'sent_post__original_post__author',
+        )
+        .prefetch_related(
+            'sent_post__images',
+            'sent_post__original_post__images',
+        )
+        .annotate(
+            is_liked=Exists(
+                MessageLike.objects.filter(
+                    message=OuterRef('pk'),
+                    sender=request.user,
+                )
             )
         )
-    ).order_by(
-        '-is_pinned',
-        '-pinned_at',
-        '-created_at')[:20]
+        .order_by('-is_pinned', '-pinned_at', '-created_at')
+    )
 
-
-    messages = Message.objects.filter(dialog=dialog, is_pinned=False).annotate(
-        is_liked=Exists(
-            MessageLike.objects.filter(
-                message=OuterRef('pk'),
-                sender=request.user,
-            )
-        )
-    ).order_by(
-        '-is_pinned',
-        '-pinned_at',
-        '-created_at')[:20]
-
-    messages = reversed(messages)
-    pinned_messages = reversed(pinned_messages)
+    pinned_messages = reversed(base_qs.filter(is_pinned=True)[:20])
+    messages = reversed(base_qs.filter(is_pinned=False)[:20])
 
     return render(request, 'chat.html', {
         'dialog': dialog,
