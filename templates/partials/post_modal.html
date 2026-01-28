@@ -87,6 +87,13 @@
 
     <span id="modal-repost-count-{{ post.id }}">{{ post.reposts.count }}</span>
 
+    <!-- Поделиться -->
+    {% if user.is_authenticated %}
+        <button class="sendPost-btn" data-post-id="{{ post.id }}">
+            <i class="fa-regular fa-share-from-square"></i>
+        </button>
+    {% endif %}
+
 </div>
 
 
