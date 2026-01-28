@@ -13,6 +13,9 @@ function formatLastSeen(dateString) {
     return `был(а) ${date.toLocaleDateString()}`;
 }
 
+window.ONLINE_USERS = new Set();
+
+
 const onlineSocket = new WebSocket(
     (location.protocol === 'https:' ? 'wss://' : 'ws://')
     + location.host + '/ws/online/'
@@ -32,32 +35,7 @@ function updateOnlineStatus(userId, isOnline) {
     }
 }
 
-onlineSocket.addEventListener('message', function (e) {
-    const data = JSON.parse(e.data);
 
-    // 🔥 ИНИЦИАЛИЗАЦИЯ (САМЫЙ ВАЖНЫЙ МОМЕНТ)
-    if (data.type === 'online_users') {
-        data.users.forEach(userId => {
-            document
-                .querySelectorAll(`[data-user-id="${userId}"] .status-text`)
-                .forEach(el => el.textContent = 'онлайн');
-        });
-    }
-
-    if (data.type === 'user_online') {
-        document
-            .querySelectorAll(`[data-user-id="${data.user_id}"] .status-text`)
-            .forEach(el => el.textContent = 'онлайн');
-    }
-
-    if (data.type === 'user_offline') {
-        document
-            .querySelectorAll(`[data-user-id="${data.user_id}"] .status-text`)
-            .forEach(el => {
-                el.textContent = formatLastSeen(data.last_seen);
-            });
-    }
-});
 
 onlineSocket.onmessage = function(e) {
     const data = JSON.parse(e.data);
@@ -77,6 +55,7 @@ onlineSocket.onmessage = function(e) {
         updateOnlineStatus(data.user_id, false);
     }
 };
+
 
 // 🔥 ДЛЯ МОДАЛОК / AJAX
 window.syncOnlineStatus = function () {
