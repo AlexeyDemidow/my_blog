@@ -22,7 +22,7 @@ class PostList(ListView):
     model = Post
     context_object_name = 'posts'
     template_name = 'home.html'
-    paginate_by = 3
+    paginate_by = 5
 
     def get_queryset(self):
         sort = self.request.GET.get('sort', 'date-new')
