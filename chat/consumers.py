@@ -338,6 +338,17 @@ class ChatListConsumer(AsyncWebsocketConsumer):
                 self.channel_name
             )
 
+    async def new_message(self, event):
+        await self.send(text_data=json.dumps({
+            'type': 'new_message',
+            'dialog_id': event['dialog_id'],
+            'message': event['message'],
+            'sender': event['sender'],
+            'from_me': event.get('from_me', False),
+        }))
+
+    async def chat_typing(self, event):
+        await self.send(text_data=json.dumps(event))
 
 ONLINE_USERS_KEY = 'online_users'
 
