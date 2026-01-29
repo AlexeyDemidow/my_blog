@@ -18,12 +18,14 @@
     {% if msg.sent_post %}
         {% with post=msg.sent_post.original_post|default:msg.sent_post %}
             <div class="text sent-post">
-                <strong>{{ post.author.username }}</strong>
-                <p>{{ post.content }}</p>
+                <div class="post open-post" data-post-id="{{ post.id }}" id="post-item-{{ post.id }}">
+                    <strong>{{ post.author.username }}</strong>
+                    <p>{{ post.content }}</p>
 
-                {% for img in post.images.all %}
-                    <img src="{{ img.image.url }}" style="max-width:200px;">
-                {% endfor %}
+                    {% for img in post.images.all %}
+                        <img src="{{ img.image.url }}" style="max-width:200px;">
+                    {% endfor %}
+                </div>
             </div>
         {% endwith %}
     {% endif %}
