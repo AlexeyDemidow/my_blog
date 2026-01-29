@@ -697,6 +697,10 @@ button[type="submit"]:hover {
     font-weight: 600;
 }
 
+.chat-header-text {
+    display: flex;
+}
+
 .chat-preview {
     font-size: 14px;
     color: #666;

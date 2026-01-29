@@ -6,7 +6,11 @@
 
 <div class="chat-container">
     <div class="chat-header">
-        Чат
+        <a href="{% url 'profile' dialog.companion.id %}" class="chat-header-text">
+            <span class="online-dot" data-user-id="{{ dialog.companion.id }}"></span>
+            <img src="{{ dialog.companion.avatar.url }}" class="round" style="width:40px;height:40px;">
+            {{ dialog.companion.username }}
+        </a>
     </div>
 
     <div id="pinned-wrapper">

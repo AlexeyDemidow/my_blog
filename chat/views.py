@@ -66,7 +66,6 @@ def start_dialog(request, user_id):
 @login_required
 def dialog_view(request, dialog_id):
     dialog = get_object_or_404(Dialog, id=dialog_id, users=request.user)
-
     dialog.messages.filter(
         is_read=False
     ).exclude(sender=request.user).update(is_read=True)
@@ -95,6 +94,8 @@ def dialog_view(request, dialog_id):
         )
         .order_by('-is_pinned', '-pinned_at', '-created_at')
     )
+
+    dialog._current_user = request.user
 
     pinned_messages = reversed(base_qs.filter(is_pinned=True)[:20])
     messages = reversed(base_qs.filter(is_pinned=False)[:20])
