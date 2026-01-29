@@ -18,7 +18,7 @@ $(document).on('click', '.sendPost-btn', function () {
                 });
             }
 
-            $.get('posts/dialogs_list/', function (res) {
+            $.get('/posts/dialogs_list/', function (res) {
             const select = $("#sendPost-dialog");
             select.empty().append('<option value="">Выберите диалог</option>');
 
