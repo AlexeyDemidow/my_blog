@@ -1,24 +1,35 @@
-
 {% extends 'base.html' %}
+
+{% load socialaccount %}
 
 {% block title %}Войти{% endblock %}
 
 {% block content %}
     <div class="login-page">
         <div class="form">
-            <form class="login-form" method="post">
+            <form class="login-form" method="post" action="{% url 'account_login' %}">
                 {% csrf_token %}
-                <input type="text" placeholder="Email пользователя" id={{ form.username }}
-                <input type="password" placeholder="Пароль" id={{ form.password }}
+                <input
+                    type="text"
+                    name="{{ form.login.name }}"
+                    placeholder="Email"
+                    value="{{ form.login.value|default_if_none:'' }}"
+                >
+
+                <input
+                    type="password"
+                    name="{{ form.password.name }}"
+                    placeholder="Пароль"
+                >
                 {% if form.errors %}
                     <div class="alert alert-danger with-close alert-dismissible fade show">
                         Имя пользователя или пароль введены неверно
                     </div>
                 {% endif %}
-                <p class="message">Не зарегистрированы? <a href="{% url 'signup' %}">Создать аккаунт</a></p>
+                <p class="message">Не зарегистрированы? <a href="{% url 'account_signup' %}">Создать аккаунт</a></p>
                 <button type="submit">Войти</button>
                 <button class="btn btn-round form-control">
-                    <a href="{% url 'social:begin' 'google-oauth2' %}">
+                    <a href="{% provider_login_url 'google' %}">
                         Вход через Google
                     </a>
                 </button>

@@ -57,8 +57,8 @@
                     {% endif %}
                     <a href="{% url 'settings' %}">Настройки</a>
                 {% else %}
-                    <a href="{% url 'signup'%}">Регистрация</a>
-                    <a href="{% url 'login'%}" class="nav-btn">Войти</a>
+                    <a href="{% url 'account_signup'%}">Регистрация</a>
+                    <a href="{% url 'account_login'%}" class="nav-btn">Войти</a>
                 {% endif %}
             </nav>
         </div>
