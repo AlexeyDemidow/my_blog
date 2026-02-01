@@ -15,6 +15,8 @@ urlpatterns = [
     path('posts/', include('posts.urls')),
     path('chat/', include('chat.urls')),
     path('oauth/', include('social_django.urls', namespace='social')),
+    path('accounts/', include("allauth.urls")),
+
 
 ]
 

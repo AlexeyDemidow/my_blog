@@ -21,7 +21,7 @@ class SignUpView(CreateView):
     model = CustomUser
     form_class = CustomUserCreationForm
     success_url = reverse_lazy('signup_success')
-    template_name = 'registration/signup.html'
+    template_name = 'account/signup.html'
 
     def form_valid(self, form):
         form.save()
@@ -38,7 +38,7 @@ class Login(LoginView):
     """Представление входа в систему"""
 
     form_class = AuthenticationForm
-    template_name = 'login.html'
+    template_name = 'account/login.html'
     success_url = reverse_lazy('home')
 
 
