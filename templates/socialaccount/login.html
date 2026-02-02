@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+
+{% load i18n %}
+{% load socialaccount %}
+
+{% block title %}Войти через Google{% endblock %}
+
+{% block content %}
+    <div class="login-page">
+        <div class="form">
+            <p>
+                {% blocktrans with provider.name as provider %}
+                    Вы собираетесь войти, используя аккаунт {{ provider }}.
+                {% endblocktrans %}
+            </p>
+            <form method="post">
+                {% csrf_token %}
+                <button type="submit">
+                    {% trans "Продолжить" %}
+                </button>
+            </form>
+            <br>
+            <br>
+            <br>
+            <p class="message">Не зарегистрированы? <a href="{% url 'account_signup' %}">Создать аккаунт</a></p>
+                <button type="submit">Войти</button>
+                <p class="message"><a href="{% url 'password_reset' %}">Забыли пароль?</a></p>
+        <div/>
+    </div>
+{% endblock %}
