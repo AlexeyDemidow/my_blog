@@ -192,7 +192,7 @@ SOCIALACCOUNT_PROVIDERS = {
     }
 }
 
-LOGIN_REDIRECT_URL = 'home'
+LOGIN_REDIRECT_URL = 'signup_success'
 LOGOUT_REDIRECT_URL = 'home'
 LOGIN_URL = 'account_login'
 LOGOUT_URL = 'logout'
