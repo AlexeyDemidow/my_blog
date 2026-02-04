@@ -11,3 +11,4 @@
 `celery -A project-name beat -l info`
 - Для запуска flower:
 `celery -A project-name flower`
+- Или отслеживать выполненные задачи в admin панели
