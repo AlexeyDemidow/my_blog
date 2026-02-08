@@ -7,6 +7,7 @@ from django.shortcuts import render, get_object_or_404
 from django.template.loader import render_to_string
 from django.urls import reverse_lazy
 from django.utils import timezone
+from django.utils.formats import date_format
 from django.views.decorators.http import require_POST
 from django.views.generic import ListView, CreateView, UpdateView
 from django.template.defaultfilters import date as django_date
@@ -271,11 +272,13 @@ def repost(request, pk):
         'id': new_post.id,
         'avatar': str(original.author.avatar),
         'author': new_post.author.username,
+        'author_id': new_post.author.id,
         'text': new_post.repost_text,
-        'created_at': new_post.created_at.strftime('%Y-%m-%d %H:%M'),
+        'created_at': date_format(new_post.created_at, "j E Y г. H:i"),
         'orig_author': original.author.username,
+        'orig_author_id': original.author.id,
         'orig_content': original.content,
-        'orig_images': list(original.images.values('image'))
+        'orig_images': list(original.images.values('image')),
     })
 
 
