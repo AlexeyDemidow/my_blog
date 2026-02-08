@@ -49,21 +49,23 @@ $(document).on('click', '.modal-comment-btn', function(event) {
 
                 // Создаём DOM-элемент комментария (можно настроить шаблон)
                 const commentHtml = `
-                    <li id="comment-${c.id}">
+                    <li id="modal-comment-${c.id}">
                         <strong>${escapeHtml(c.user)}</strong>:
                         <span class="comment-text">${escapeHtml(c.text)}</span>
                         <small class="text-muted">${escapeHtml(c.created_at)}</small>
                        
-                        <button class="comment-like-btn" data-comment-id="${c.id}">
+                        <button class="modal-comment-like-btn" data-comment-id="${c.id}">
                             <i class="fa-regular fa-heart"></i>
                         </button>
-                        <span id="actual-comment-like-${c.id}">${c.like_count}</span>
-                        <button class="del-comment-btn" data-comment-id="${c.id}">${escapeHtml('Удалить')}</button>
+                        <span id="modal-actual-comment-like-${c.id}">${c.like_count}</span>
+                        <button class="modal-del-comment-btn" data-comment-id="${c.id}">${escapeHtml('Удалить')}</button>
+                        <a href="/posts/update_comment/${c.id}/" class="edit-comment-btn" data-comment-id="${c.id}">
+                            ${escapeHtml('Редактировать')}
+                        </a>
                     </li>
                 `;
 
                 // Добавляем комментарий в начало/конец списка
-                // $('#comments-list-' + postId).prepend(commentHtml);
                 $('#modal-comments-list-' + postId).prepend(commentHtml);
 
                 $(`#comment-count-${postId}`).text(data.comment_count);
