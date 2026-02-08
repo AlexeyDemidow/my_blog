@@ -64,21 +64,36 @@ $(document).on('click', '#send-repost-btn', function () {
 
                 let newPost = `
                     <div class="post" data-post-id="${data.id}" id="post-item-${data.id}">
+                    
+                        <div class="options-menu" data-post-id="${data.id}">
+                            <button class="options-btn">⋮</button>
+                            <div class="dropdown">
+                                <a href="/posts/update/${data.id}">Изменить пост</a>
+                                <button class="del-post-btn" data-post-id="${data.id}">
+                                    Удалить пост
+                                </button>
+                            </div>
+                        </div>
             
                         <div class="post open-post" data-post-id="${data.id}">
                             <p style="color:green;">
-                                🔁 ${data.author} сделал репост
+                            <a href="/users/${data.author_id}">🔁 ${data.author}</a>
+                                сделал репост
                             </p>
             
                             ${data.text ? `<p>${data.text}</p>` : ''}
             
                             <div class="repost-box" style="border:1px solid #ccc;padding:10px;border-radius:10px;">
-                            <p>
-                                <img src="/media/avatars/${data.avatar}" class="round" style="width:40px;height:40px;">
-                            </p>
-                                <h3>${data.orig_author}</h3>
+                                <span class="online-dot" data-user-id="${data.author_id}"></span>
+                                <p>
+                                    <img src="/media/${data.avatar}" class="round" style="width:40px;height:40px;">
+                                </p>
+                                <h3>
+                                    <a href="/users/${data.orig_author_id}">${data.orig_author}</a>
+                                </h3>
                                 <p>${data.orig_content}</p>
                                 ${imagesHTML}
+                                <small>${data.created_at}</small>
                             </div>
                         </div>
             
@@ -94,9 +109,8 @@ $(document).on('click', '#send-repost-btn', function () {
                             <i class="fa-solid fa-retweet"></i>
                         </button>
                         <span id="repost-count-${data.id}">0</span>
-            
-                        <button class="del-post-btn" data-post-id="${data.id}">
-                            <i class="fa-regular fa-trash-can"></i>
+                        <button class="sendPost-btn" data-post-id="${data.id}">
+                            <i class="fa-regular fa-share-from-square"></i>
                         </button>
                     </div>
                 `;
