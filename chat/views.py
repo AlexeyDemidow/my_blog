@@ -122,7 +122,6 @@ def send_post(request, post_id, dialog_id):
         sent_post=post,
         text=request.POST.get("text", "").strip()
     )
-    print(post.content)
 
     return JsonResponse({
         'status': 'success',

@@ -3,6 +3,7 @@ from channels.generic.websocket import AsyncWebsocketConsumer
 from channels.db import database_sync_to_async
 from django.core.cache import cache
 from django.utils import timezone
+from django.utils.formats import date_format
 
 from chat.models import Message, MessageLike
 
@@ -193,6 +194,8 @@ class PrivateChatConsumer(AsyncWebsocketConsumer):
                 "message_id": message.id,
                 "text": message.text,
                 "username": user.username,
+                "created_at": date_format(message.created_at, "j E Y г. H:i"),
+                "is_read": message.is_read,
             }
         )
 
@@ -202,6 +205,8 @@ class PrivateChatConsumer(AsyncWebsocketConsumer):
             "message_id": event["message_id"],
             "text": event["text"],
             "username": event["username"],
+            "created_at": event["created_at"],
+            "is_read": event["is_read"],
         }))
 
     # ---------------------------

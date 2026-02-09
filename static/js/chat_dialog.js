@@ -57,7 +57,12 @@ document.addEventListener('DOMContentLoaded', function() {
             const textDiv = messageDiv.querySelector(".text");
             textDiv.innerHTML = `
                 ${data.text}
-                <span class="chat-time">отредактировано</span>
+                <span class="chat-time">
+                    ${data.created_at}
+                </span>
+                <span class="read-status">
+                    ${data.is_read ? '✔✔' : '✔'}
+                </span>
             `;
             return;
         }
