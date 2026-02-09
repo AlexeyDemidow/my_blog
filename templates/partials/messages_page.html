@@ -43,7 +43,7 @@
         {% endif %}
     </div>
 
-    {% if user.is_authenticated %}
+    {% if user.is_authenticated and user == msg.sender %}
         <div class="message-options-menu" data-message-id="{{ msg.id }}">
             <button class="options-btn">⋮</button>
             <div class="dropdown">
@@ -53,6 +53,15 @@
                 <button class="del-message-btn" data-message-id="{{ msg.id }}">
                     Удалить сообщение
                 </button>
+                <button class="pin-message-btn" data-message-id="{{ msg.id }}" data-pin-url="{% url 'toggle_message_pin' msg.dialog.id msg.id %}">
+                    Закрепить сообщение
+                </button>
+            </div>
+        </div>
+    {% else %}
+        <div class="message-options-menu" data-message-id="{{ msg.id }}">
+            <button class="options-btn">⋮</button>
+            <div class="dropdown">
                 <button class="pin-message-btn" data-message-id="{{ msg.id }}" data-pin-url="{% url 'toggle_message_pin' msg.dialog.id msg.id %}">
                     Закрепить сообщение
                 </button>
