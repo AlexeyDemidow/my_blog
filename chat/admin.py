@@ -1,5 +1,11 @@
 from django.contrib import admin
-from .models import Dialog, Message
+from .models import Dialog, Message, DialogUser
+
+
+class DialogUserInline(admin.TabularInline):
+    model = DialogUser
+    extra = 0
+
 
 @admin.register(Message)
 class MessageAdmin(admin.ModelAdmin):
@@ -24,11 +30,14 @@ class MessageAdmin(admin.ModelAdmin):
 @admin.register(Dialog)
 class DialogAdmin(admin.ModelAdmin):
     list_display = ('id', 'users_list', 'created_at')
-    filter_horizontal = ('users',)
     readonly_fields = ('created_at',)
+    inlines = (DialogUserInline,)
 
     def users_list(self, obj):
-        return ', '.join(user.username for user in obj.users.all())
+        return ', '.join(
+            du.user.username for du in obj.dialog_users.select_related('user')
+        )
 
     users_list.short_description = 'Участники'
+
 
