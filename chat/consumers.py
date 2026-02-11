@@ -79,6 +79,8 @@ class PrivateChatConsumer(AsyncWebsocketConsumer):
 
         for user_id in await self.get_dialog_users():
             if user_id != user.id:
+                was_hidden = await self.unhide_dialog_for_user(user_id)
+
                 await self.channel_layer.group_send(
                     f'user_{user_id}',
                     {
@@ -86,7 +88,8 @@ class PrivateChatConsumer(AsyncWebsocketConsumer):
                         'dialog_id': self.dialog_id,
                         'message': message.text,
                         'sender': user.username,
-                        'from_me': False
+                        'from_me': False,
+                        'unhide': was_hidden
                     }
                 )
 
@@ -316,9 +319,31 @@ class PrivateChatConsumer(AsyncWebsocketConsumer):
             'username': user.username
         }
 
+    @database_sync_to_async
+    def unhide_dialog_for_user(self, user_id):
+        from chat.models import DialogUser
+        dialog_user = DialogUser.objects.filter(dialog_id=self.dialog_id, user_id=user_id).first()
+        if dialog_user and dialog_user.is_hidden:
+            dialog_user.is_hidden = False
+            dialog_user.hidden_at = None
+            dialog_user.save()
+            return True
+        return False
+
 
 class ChatListConsumer(AsyncWebsocketConsumer):
     group_name = None  # 🔑 ОБЯЗАТЕЛЬНО
+
+    async def receive(self, text_data):
+        data = json.loads(text_data)
+        dialog_id = data.get('dialog_id')
+
+        if data['type'] == 'delete_dialog_me':
+            await self.hide_dialog(data['dialog_id'])
+
+        if data['type'] == 'delete_dialog_all':
+            await self.delete_dialog_all(data['dialog_id'])
+
 
     async def connect(self):
         user = self.scope['user']
@@ -335,6 +360,68 @@ class ChatListConsumer(AsyncWebsocketConsumer):
         )
 
         await self.accept()
+
+
+    async def chat_deleted(self, event):
+        await self.send(text_data=json.dumps({
+            "type": "dialog_deleted",
+            'dialog_id': event['dialog_id'],
+        }))
+
+    async def hide_dialog(self, dialog_id):
+        from chat.models import DialogUser
+
+        user = self.scope['user']
+
+        dialog_user = await database_sync_to_async(
+            lambda: DialogUser.objects.filter(dialog_id=dialog_id, user=user).first()
+        )()
+
+        if not dialog_user:
+            return
+
+        dialog_user.is_hidden = True
+        dialog_user.hidden_at = timezone.now()
+        await database_sync_to_async(dialog_user.save)()
+
+        # ❗ только текущему пользователю
+        await self.send(text_data=json.dumps({
+            'type': 'dialog_hidden',
+            'dialog_id': dialog_id
+        }))
+
+    async def dialog_deleted(self, event):
+        await self.send(text_data=json.dumps({
+            'type': 'dialog_deleted',
+            'dialog_id': event['dialog_id']
+        }))
+
+    async def delete_dialog_all(self, dialog_id):
+        from chat.models import Dialog
+
+        user = self.scope['user']
+
+        dialog = await database_sync_to_async(
+            Dialog.objects.filter(id=dialog_id, users=user).first
+        )()
+
+        if not dialog:
+            return
+
+        users = await database_sync_to_async(
+            lambda: list(dialog.users.values_list('id', flat=True))
+        )()
+
+        await database_sync_to_async(dialog.delete)()
+
+        for user_id in users:
+            await self.channel_layer.group_send(
+                f'user_{user_id}',
+                {
+                    'type': 'dialog_deleted',
+                    'dialog_id': dialog_id
+                }
+            )
 
     async def disconnect(self, close_code):
         if self.group_name:  # 🔒 защита
