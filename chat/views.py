@@ -11,7 +11,7 @@ from django.views.generic import ListView
 
 from posts.models import Post
 from users.models import CustomUser
-from .models import Dialog, Message, MessageLike
+from .models import Dialog, Message, MessageLike, DialogUser
 from .services import get_or_create_dialog
 
 
@@ -28,9 +28,19 @@ class DialogList(LoginRequiredMixin, ListView):
             dialog=OuterRef('pk')
         ).order_by('-created_at')
 
+        is_hidden_subquery = DialogUser.objects.filter(
+            dialog=OuterRef('pk'),
+            user=user,  # ← проверяем только для текущего пользователя
+            is_hidden=True
+        )
+
         qs = (
             Dialog.objects
             .filter(users=user)
+            .annotate(
+                is_hidden_for_me=Exists(is_hidden_subquery)
+            )
+            .exclude(is_hidden_for_me=True)
             .annotate(
                 last_message_text=Subquery(last_message_subquery.values('text')[:1]),
                 last_message_time=Subquery(last_message_subquery.values('created_at')[:1]),
