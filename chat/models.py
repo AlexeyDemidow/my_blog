@@ -5,7 +5,11 @@ from users.models import CustomUser
 
 
 class Dialog(models.Model):
-    users = models.ManyToManyField(CustomUser, related_name='dialogs')
+    users = models.ManyToManyField(
+        CustomUser,
+        through='DialogUser',
+        related_name='dialogs'
+    )
     created_at = models.DateTimeField(auto_now_add=True)
 
     is_pinned = models.BooleanField(default=False)
@@ -17,6 +21,25 @@ class Dialog(models.Model):
 
     def __str__(self):
         return f'Dialog {self.id}'
+
+
+class DialogUser(models.Model):
+    dialog = models.ForeignKey(
+        Dialog,
+        on_delete=models.CASCADE,
+        related_name='dialog_users'
+    )
+    user = models.ForeignKey(
+        CustomUser,
+        on_delete=models.CASCADE
+    )
+
+    is_hidden = models.BooleanField(default=False)
+    hidden_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        unique_together = ('dialog', 'user')
+
 
 
 class Message(models.Model):
