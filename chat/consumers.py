@@ -87,6 +87,7 @@ class PrivateChatConsumer(AsyncWebsocketConsumer):
                         'type': 'new_message',
                         'dialog_id': self.dialog_id,
                         'message': message.text,
+                        'message_created_at': date_format(message.created_at, "j E Y г. H:i"),
                         'sender': user.username,
                         'from_me': False,
                         'unhide': was_hidden
@@ -99,6 +100,7 @@ class PrivateChatConsumer(AsyncWebsocketConsumer):
                 'type': 'chat_message',
                 'id': message.id,
                 'message': message.text,
+                'message_created_at': date_format(message.created_at, "j E Y г. H:i"),
                 'sender': user.username,
                 'sender_id': user.id,
                 'is_read': False,

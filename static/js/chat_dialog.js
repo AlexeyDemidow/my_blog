@@ -116,7 +116,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // -------- message --------
         if (data.message) {
             typingIndicator.textContent = '';
-            addMessage(data.sender, data.message, data.id);
+            addMessage(data.sender, data.message, data.id, data.message_created_at);
             setTimeout(tryMarkAsRead, 0);
         }
     };
@@ -159,7 +159,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }, 1200);
     });
 
-    function addMessage(sender, message, id) {
+    function addMessage(sender, message, id, message_created_at) {
         const div = document.createElement('div');
         div.classList.add('message');
         div.dataset.id = id;
@@ -176,6 +176,9 @@ document.addEventListener('DOMContentLoaded', function() {
         div.innerHTML = `
             <div class="text">
                 ${message}
+                <span class="chat-time">
+                    ${ message_created_at }
+                </span>
                 ${readStatus}
             </div>
         `;
