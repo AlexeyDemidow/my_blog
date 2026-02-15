@@ -1,7 +1,7 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.paginator import Paginator
-from django.db.models import Max, Count, Q, OuterRef, Subquery, Exists
-from django.http import HttpResponseForbidden, JsonResponse
+from django.db.models import Count, Q, OuterRef, Subquery, Exists
+from django.http import JsonResponse
 from django.shortcuts import redirect, get_object_or_404, render
 from django.contrib.auth.decorators import login_required
 from django.template.loader import render_to_string
@@ -13,7 +13,6 @@ from posts.models import Post
 from users.models import CustomUser
 from .models import Dialog, Message, MessageLike, DialogUser
 from .services import get_or_create_dialog
-
 
 
 class DialogList(LoginRequiredMixin, ListView):
@@ -150,6 +149,7 @@ def send_post(request, post_id, dialog_id):
         }
     })
 
+
 @login_required
 @require_POST
 def toggle_pin(request, dialog_id):
@@ -165,6 +165,7 @@ def toggle_pin(request, dialog_id):
     return JsonResponse({
         'is_pinned': chat.is_pinned
     })
+
 
 @login_required
 @require_POST
@@ -199,6 +200,7 @@ def like_unlike_message(request, message_id):
         'is_liked': is_liked,
         'like_count': message.message_likes.count()
     })
+
 
 @login_required
 def pag_messages(request, dialog_id):
