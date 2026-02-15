@@ -1,5 +1,5 @@
-
 from django.core.mail import send_mail
+
 from my_blog.celery import app
 from .service import send_email
 from .models import CustomUser
