@@ -1,7 +1,7 @@
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.paginator import Paginator
-from django.forms import modelformset_factory, inlineformset_factory
+from django.forms import inlineformset_factory
 from django.http import JsonResponse, HttpResponseBadRequest
 from django.shortcuts import render, get_object_or_404
 from django.template.loader import render_to_string
@@ -14,7 +14,7 @@ from django.template.defaultfilters import date as django_date
 from django.db.models import Exists, OuterRef, Prefetch, Count
 
 from chat.models import Dialog
-from posts.forms import PostCreationForm, PostImageFormSet
+from posts.forms import PostCreationForm
 from posts.models import Post, PostLike, Comment, PostImage, CommentLike
 from users.views import Profile
 
@@ -28,7 +28,6 @@ class PostList(ListView):
     def get_queryset(self):
         sort = self.request.GET.get('sort', 'date-new')
 
-        # Базовый queryset с предзагрузкой связей
         posts = (
             Post.objects
             .select_related('author', 'original_post', 'original_post__author')
@@ -45,7 +44,6 @@ class PostList(ListView):
         )
 
         if self.request.user.is_authenticated:
-            # Предзагружаем комментарии с аннотацией is_liked и лайками
             comments_queryset = Comment.objects.select_related('user').annotate(
                 is_liked=Exists(
                     CommentLike.objects.filter(user=self.request.user, comment=OuterRef('pk'))
@@ -60,7 +58,6 @@ class PostList(ListView):
                 )
             )
         else:
-            # Анонимному пользователю просто предзагружаем комментарии
             posts = posts.prefetch_related('comments')
 
         # ---------- Сортировка ----------
@@ -98,13 +95,12 @@ class PostCreate(LoginRequiredMixin, CreateView):
         context = self.get_context_data()
         images_formset = context['images_formset']
 
-        # Присваиваем автора
         form.instance.author = self.request.user
 
         if form.is_valid() and images_formset.is_valid():
-            self.object = form.save()  # Сохраняем пост
+            self.object = form.save()
             images_formset.instance = self.object
-            images_formset.save()  # Сохраняем изображения
+            images_formset.save()
             return super().form_valid(form)
         else:
             return self.form_invalid(form)
@@ -121,7 +117,6 @@ class PostUpdate(LoginRequiredMixin, UpdateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
-        # Исправлено: can_delete=True
         ImageFormSet = inlineformset_factory(Post, PostImage, fields=('image',), extra=50, can_delete=True)
 
         if self.request.POST:
@@ -133,7 +128,6 @@ class PostUpdate(LoginRequiredMixin, UpdateView):
         else:
             context['images_formset'] = ImageFormSet(instance=self.object)
 
-        # Текущие изображения для шаблона
         context['post_images'] = self.object.images.all()
         return context
 
@@ -146,7 +140,7 @@ class PostUpdate(LoginRequiredMixin, UpdateView):
         if form.is_valid() and images_formset.is_valid():
             self.object = form.save()
             images_formset.instance = self.object
-            images_formset.save()  # сохранение добавленных/удалённых изображений
+            images_formset.save()
             return super().form_valid(form)
         else:
             return self.form_invalid(form)
@@ -168,7 +162,6 @@ def post_detail(request, pk):
     comms_sort = request.GET.get('comms_sort', 'modal-date-new')
     comments = post.comments.all().annotate(likes_count=Count('comment_likes', distinct=True))
 
-    # ---------- Сортировка ----------
     if comms_sort == 'modal-date-new':
         comments = comments.order_by('-created_at')
     elif comms_sort == 'modal-date-old':
@@ -178,8 +171,6 @@ def post_detail(request, pk):
     else:
         comments = comments.order_by('-created_at')
 
-
-    # Если юзер не авторизован — просто помечаем флаги
     if not request.user.is_authenticated:
         post.is_liked = False
         for c in comments:
@@ -189,7 +180,6 @@ def post_detail(request, pk):
             'comments': comments,
         })
 
-    # ✔️ Получаем ВСЕ лайки пользователя одним запросом
     user_likes_post = post.likes.filter(user=request.user).exists()
 
     user_liked_comment_ids = set(
@@ -199,7 +189,6 @@ def post_detail(request, pk):
         ).values_list('comment_id', flat=True)
     )
 
-    # Проставляем флаги
     post.is_liked = user_likes_post
     for c in comments:
         c.is_liked = c.id in user_liked_comment_ids
@@ -215,7 +204,6 @@ def post_detail(request, pk):
 def post_delete(request, pk):
     post = get_object_or_404(Post, id=pk, author=request.user)
 
-    # Проверяем, является ли пост репостом
     original_post_id = None
     if post.original_post:
         original_post_id = post.original_post.id
@@ -250,7 +238,6 @@ def like_unlike_post(request, pk):
 def repost(request, pk):
     original = get_object_or_404(Post, id=pk)
 
-    # Проверяем, не репостил ли уже пользователь этот пост
     existing = Post.objects.filter(
         author=request.user,
         original_post=original
@@ -321,7 +308,6 @@ def add_comment(request, pk):
     if not text:
         return HttpResponseBadRequest('Empty comment')
 
-    # создаём новый комментарий
     comment = Comment.objects.create(
         user=request.user,
         post=post,
