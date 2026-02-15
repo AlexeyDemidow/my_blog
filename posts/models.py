@@ -9,7 +9,6 @@ class Post(models.Model):
     repost_text = models.TextField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
-    # Если это репост — здесь ссылка на оригинал
     original_post = models.ForeignKey(
         'self',
         on_delete=models.CASCADE,
@@ -20,10 +19,12 @@ class Post(models.Model):
     def is_repost(self):
         return self.original_post is not None
 
+
 class PostImage(models.Model):
     post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='images')
     image = models.ImageField(upload_to='post_images/')
     uploaded_at = models.DateTimeField(auto_now_add=True)
+
 
 class PostLike(models.Model):
     post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='likes')
