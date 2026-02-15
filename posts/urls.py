@@ -4,7 +4,7 @@ from django.urls import path
 from posts.views import PostList, PostCreate, like_unlike_post, add_comment, del_comment, post_delete, \
     like_unlike_comment, repost, post_detail, get_data_for_repost, PostUpdate, pag_home_posts, pag_profile_posts, \
     update_comment, user_dialogs
-from users.views import SignUpView, SignUpSuccess, Login, Profile, UpdateProfile, ProfileSettings
+from users.views import SignUpView, Login, Profile, UpdateProfile, ProfileSettings
 from django.contrib.auth import views
 
 urlpatterns = [
