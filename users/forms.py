@@ -1,12 +1,9 @@
-
 from django.contrib.auth.forms import UserCreationForm, UserChangeForm
-from .models import *
-from django.forms import ModelForm
-from datetime import datetime
+
+from .models import CustomUser
 
 
 class CustomUserCreationForm(UserCreationForm):
-    """Форма создания пользователя"""
 
     class Meta:
         model = CustomUser
@@ -14,7 +11,6 @@ class CustomUserCreationForm(UserCreationForm):
 
 
 class CustomUserChangeForm(UserChangeForm):
-    """Форма изменения данных пользователя"""
 
     password = None
 
@@ -24,11 +20,7 @@ class CustomUserChangeForm(UserChangeForm):
 
 
 class CustomUserChangeFormAdmin(UserChangeForm):
-    """Форма изменения данных пользователя в админ-панели"""
 
     class Meta:
         model = CustomUser
         fields = ['username', 'email', 'bio', 'avatar']
-
-
-
