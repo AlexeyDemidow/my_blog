@@ -1,9 +1,11 @@
 import json
-from channels.generic.websocket import AsyncWebsocketConsumer
-from channels.db import database_sync_to_async
+
 from django.core.cache import cache
 from django.utils import timezone
 from django.utils.formats import date_format
+
+from channels.generic.websocket import AsyncWebsocketConsumer
+from channels.db import database_sync_to_async
 
 from chat.models import Message, MessageLike
 
@@ -13,12 +15,10 @@ class PrivateChatConsumer(AsyncWebsocketConsumer):
         self.dialog_id = self.scope['url_route']['kwargs']['dialog_id']
         self.room_group_name = f'dialog_{self.dialog_id}'
 
-        # Проверяем, имеет ли пользователь доступ к диалогу
         if not await self.user_has_access():
             await self.close()
             return
 
-        # Подключаемся к группе WebSocket
         await self.channel_layer.group_add(
             self.room_group_name,
             self.channel_name
@@ -27,7 +27,6 @@ class PrivateChatConsumer(AsyncWebsocketConsumer):
         await self.accept()
 
     async def disconnect(self, close_code):
-        # Отключаемся от группы WebSocket
         await self.channel_layer.group_discard(
             self.room_group_name,
             self.channel_name
@@ -60,7 +59,6 @@ class PrivateChatConsumer(AsyncWebsocketConsumer):
             await self.edit_message(data)
             return
 
-        # ✅ 2. TYPING
         if data.get('type') == 'typing':
             await self.handle_typing(data)
             return
@@ -69,7 +67,6 @@ class PrivateChatConsumer(AsyncWebsocketConsumer):
             await self.delete_message(data)
             return
 
-        # ✅ 3. MESSAGE
         message_text = data.get('message', '').strip()
         if not message_text:
             return
@@ -147,7 +144,6 @@ class PrivateChatConsumer(AsyncWebsocketConsumer):
         username = self.scope['user'].username
         is_typing = data.get('is_typing', False)
 
-        # typing в диалоге
         await self.channel_layer.group_send(
             self.room_group_name,
             {
@@ -157,7 +153,6 @@ class PrivateChatConsumer(AsyncWebsocketConsumer):
             }
         )
 
-        # typing в списке бесед
         dialog_users = await self.get_dialog_users()
 
         for user_id in dialog_users:
@@ -191,7 +186,6 @@ class PrivateChatConsumer(AsyncWebsocketConsumer):
         message.is_edited = True
         await database_sync_to_async(message.save)()
 
-        # 🔥 рассылаем ВСЕМ
         await self.channel_layer.group_send(
             self.room_group_name,
             {
@@ -214,9 +208,6 @@ class PrivateChatConsumer(AsyncWebsocketConsumer):
             "is_read": event["is_read"],
         }))
 
-    # ---------------------------
-    # Удаление сообщения
-    # ---------------------------
     async def delete_message(self, data):
         message_id = data.get("message_id")
         user = self.scope["user"]
@@ -224,15 +215,12 @@ class PrivateChatConsumer(AsyncWebsocketConsumer):
         from chat.models import Message
 
         try:
-            # Только автор может удалить своё сообщение
             message = await database_sync_to_async(Message.objects.get)(id=message_id, sender=user)
         except Message.DoesNotExist:
             return
 
-        # Удаляем сообщение
         await database_sync_to_async(message.delete)()
 
-        # Рассылаем всем участникам, чтобы они удалили сообщение из DOM
         await self.channel_layer.group_send(
             self.room_group_name,
             {
@@ -241,22 +229,14 @@ class PrivateChatConsumer(AsyncWebsocketConsumer):
             }
         )
 
-    # ---------------------------
-    # Обработчик события group_send
-    # ---------------------------
     async def message_deleted(self, event):
         await self.send(text_data=json.dumps({
             "type": "message_deleted",
             "message_id": event["message_id"]
         }))
 
-    # ---------------------------
-    # Работа с базой данных
-    # ---------------------------
-
     @database_sync_to_async
     def save_message(self, user_id, text):
-        # Ленивый импорт моделей, чтобы избежать ошибок Apps aren't loaded yet
         from .models import Dialog, Message
 
         dialog = Dialog.objects.get(id=self.dialog_id)
@@ -274,7 +254,6 @@ class PrivateChatConsumer(AsyncWebsocketConsumer):
         if not dialog:
             return False
 
-        # Сравниваем по id, чтобы избежать ленивых ссылок
         return self.scope['user'].id in [u.id for u in dialog.users.all()]
 
     @database_sync_to_async
@@ -334,7 +313,7 @@ class PrivateChatConsumer(AsyncWebsocketConsumer):
 
 
 class ChatListConsumer(AsyncWebsocketConsumer):
-    group_name = None  # 🔑 ОБЯЗАТЕЛЬНО
+    group_name = None
 
     async def receive(self, text_data):
         data = json.loads(text_data)
@@ -386,7 +365,6 @@ class ChatListConsumer(AsyncWebsocketConsumer):
         dialog_user.hidden_at = timezone.now()
         await database_sync_to_async(dialog_user.save)()
 
-        # ❗ только текущему пользователю
         await self.send(text_data=json.dumps({
             'type': 'dialog_hidden',
             'dialog_id': dialog_id
@@ -426,7 +404,7 @@ class ChatListConsumer(AsyncWebsocketConsumer):
             )
 
     async def disconnect(self, close_code):
-        if self.group_name:  # 🔒 защита
+        if self.group_name:
             await self.channel_layer.group_discard(
                 self.group_name,
                 self.channel_name
@@ -464,11 +442,9 @@ class OnlineStatusConsumer(AsyncWebsocketConsumer):
         )
         await self.accept()
 
-        # ⬇счётчик подключений
         count = cache.get(self.cache_key, 0) + 1
         cache.set(self.cache_key, count)
 
-        # ⬇️ если первое подключение
         if count == 1:
             online_users = set(cache.get(ONLINE_USERS_KEY, []))
             online_users.add(user.id)
@@ -482,7 +458,6 @@ class OnlineStatusConsumer(AsyncWebsocketConsumer):
                 }
             )
 
-        # отправляем текущий online-список НОВОМУ клиенту
         await self.send(text_data=json.dumps({
             'type': 'online_users',
             'users': cache.get(ONLINE_USERS_KEY, [])
@@ -495,7 +470,6 @@ class OnlineStatusConsumer(AsyncWebsocketConsumer):
             if count <= 0:
                 cache.delete(self.cache_key)
 
-                # ❗ сохраняем last_seen
                 await self.set_last_seen()
 
                 online_users = set(cache.get(ONLINE_USERS_KEY, []))
@@ -532,4 +506,3 @@ class OnlineStatusConsumer(AsyncWebsocketConsumer):
     def set_last_seen(self):
         self.user.last_seen = timezone.now()
         self.user.save(update_fields=['last_seen'])
-
