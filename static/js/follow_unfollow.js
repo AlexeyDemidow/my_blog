@@ -18,5 +18,4 @@ document.addEventListener('DOMContentLoaded', function () {
             $('#followers-count').text(data.followers_count + ' Подписок');
         });
     });
-
 });

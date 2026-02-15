@@ -1,6 +1,5 @@
 document.addEventListener("click", function (e) {
 
-    // ---------- НАЖАТИЕ "РедАКТИРОВАТЬ" ----------
     if (e.target.classList.contains("edit-comment-btn")) {
         e.preventDefault();
 
@@ -8,24 +7,20 @@ document.addEventListener("click", function (e) {
         const li = document.getElementById(`modal-comment-${commentId}`);
         const textSpan = li.querySelector(".comment-text");
 
-        // если уже редактируется — выходим
         if (li.querySelector("textarea")) return;
 
         const oldText = textSpan.textContent.trim();
 
-        // textarea
         const textarea = document.createElement("textarea");
         textarea.value = oldText;
         textarea.rows = 2;
         textarea.classList.add("edit-comment-textarea");
 
-        // кнопка сохранить
         const saveBtn = document.createElement("button");
         saveBtn.textContent = "Сохранить";
         saveBtn.classList.add("save-comment-btn");
         saveBtn.dataset.commentId = commentId;
 
-        // кнопка отмена
         const cancelBtn = document.createElement("button");
         cancelBtn.textContent = "Отмена";
         cancelBtn.classList.add("cancel-comment-btn");
@@ -36,7 +31,6 @@ document.addEventListener("click", function (e) {
         e.target.style.display = "none";
     }
 
-    // ---------- ОТМЕНА ----------
     if (e.target.classList.contains("cancel-comment-btn")) {
         const li = e.target.closest("li");
         const textarea = li.querySelector("textarea");
@@ -53,7 +47,6 @@ document.addEventListener("click", function (e) {
         e.target.remove();
     }
 
-    // ---------- СОХРАНЕНИЕ ----------
     if (e.target.classList.contains("save-comment-btn")) {
         const commentId = e.target.dataset.commentId;
         const li = document.getElementById(`modal-comment-${commentId}`);
@@ -87,7 +80,6 @@ document.addEventListener("click", function (e) {
     }
 });
 
-// ---------- CSRF ----------
 function getCSRFToken() {
     return document.cookie
         .split("; ")

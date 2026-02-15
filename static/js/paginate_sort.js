@@ -4,9 +4,9 @@ let hasNext = true;
 
 document.addEventListener("DOMContentLoaded", () => {
     const postsContainer = document.querySelector("#posts-container");
-    if (!postsContainer) return; // Если контейнера нет, выходим
+    if (!postsContainer) return;
 
-    const userId = postsContainer.dataset.userId || null; // null = Home page
+    const userId = postsContainer.dataset.userId || null;
 
     function getFetchUrl(page, sort) {
         if (userId) {
@@ -38,14 +38,12 @@ document.addEventListener("DOMContentLoaded", () => {
             });
     }
 
-    // Скролл
     window.addEventListener("scroll", () => {
         if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 500) {
             loadMorePosts();
         }
     });
 
-    // Смена сортировки
     const sortSelector = document.getElementById("sort-selector");
     if (sortSelector) {
         sortSelector.addEventListener("change", () => {

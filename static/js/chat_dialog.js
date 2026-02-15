@@ -30,7 +30,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     };
 
-        // Клик на кнопку удаления
     $(document).on('click', '.del-message-btn', function (e) {
         e.preventDefault();
 
@@ -47,7 +46,6 @@ document.addEventListener('DOMContentLoaded', function() {
     socket.onmessage = function (e) {
         const data = JSON.parse(e.data);
 
-    // -------- edit message --------
         if (data.type === "message_edited") {
             const messageDiv = document.querySelector(
                 `.message[data-id="${data.message_id}"]`
@@ -73,7 +71,6 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
 
-        // -------- typing --------
         if (data.type === 'typing' && data.username !== currentUser) {
             typingIndicator.textContent = data.is_typing
                 ? `${data.username} печатает...`
@@ -81,7 +78,6 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
 
-    // -------- read --------
         if (data.type === 'messages_read' && data.message_ids) {
             data.message_ids.forEach(id => {
                 const msg = document.querySelector(
@@ -92,15 +88,9 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
 
-        // -------- like --------
         if (data.type === 'like_update') {
             const messageId = data.message_id;
-            console.log(window.CURRENT_USER_ID)
-            console.log(data.username)
-            // обновляем счётчик ВСЕМ
             $('#actual-message-like-' + messageId).text(data.like_count);
-
-            // обновляем сердце ТОЛЬКО себе
             if (data.username === window.CURRENT_USER_ID) {
                 const iconHtml = data.is_liked
                     ? '<i class="fa-solid fa-heart" style="color:red;"></i>'
@@ -109,11 +99,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 $(`.message-like-btn[data-message-id="${messageId}"]`)
                     .html(iconHtml);
             }
-
             return;
         }
 
-        // -------- message --------
         if (data.message) {
             typingIndicator.textContent = '';
             addMessage(data.sender, data.message, data.id, data.message_created_at);
@@ -208,13 +196,11 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // Закрытие панели при клике вне её
     document.addEventListener('click', (e) => {
         if (!emojiPanel.contains(e.target) && e.target !== emojiBtn) {
             emojiPanel.style.display = 'none';
         }
     });
-
 
     let windowFocused = true;
     let readSent = false;
@@ -261,7 +247,6 @@ document.addEventListener('DOMContentLoaded', function() {
         readSent = false;
     });
 
-
     $(document).on('click', '.message-like-btn', function (e) {
         e.preventDefault();
 
@@ -287,7 +272,6 @@ document.addEventListener('DOMContentLoaded', function() {
         loading = true;
         page++;
 
-        // ❗ сохраняем высоту ТОЛЬКО normal-messages
         const oldHeight = normalMessages.scrollHeight;
 
         fetch(`/chat/dialog/${dialogId}/messages/?page=${page}`)
@@ -298,10 +282,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     return;
                 }
 
-                // ⬅️ prepend СТАРЫХ сообщений
                 normalMessages.insertAdjacentHTML('afterbegin', data.html);
 
-                // ❗ корректируем scroll, чтобы не прыгал
                 const newHeight = normalMessages.scrollHeight;
                 messagesDiv.scrollTop += (newHeight - oldHeight);
 
@@ -312,7 +294,4 @@ document.addEventListener('DOMContentLoaded', function() {
                 loading = false;
             });
     }
-
 })
-
-

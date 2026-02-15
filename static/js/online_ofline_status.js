@@ -35,8 +35,6 @@ function updateOnlineStatus(userId, isOnline) {
     }
 }
 
-
-
 onlineSocket.onmessage = function(e) {
     const data = JSON.parse(e.data);
 
@@ -56,8 +54,6 @@ onlineSocket.onmessage = function(e) {
     }
 };
 
-
-// 🔥 ДЛЯ МОДАЛОК / AJAX
 window.syncOnlineStatus = function () {
     document.querySelectorAll('[data-user-id]').forEach(el => {
         const userId = parseInt(el.dataset.userId);
@@ -67,17 +63,14 @@ window.syncOnlineStatus = function () {
     });
 };
 
-// Функция обновления точки во вкладке
 function updateHeaderDot() {
     const dot = document.getElementById('chat-unread-indicator');
     const hasUnread = Object.values(window.UNREAD_CHATS).some(count => count > 0);
     dot.style.display = hasUnread ? 'block' : 'none';
 };
 
-// Сразу после загрузки страницы показываем точку, если есть непрочитанные
 updateHeaderDot();
 
-// WebSocket для получения новых сообщений
 const chatSocket = new WebSocket(
     (location.protocol === 'https:' ? 'wss://' : 'ws://') + location.host + '/ws/chat_list/'
 );
@@ -86,15 +79,12 @@ chatSocket.onmessage = function(e) {
     const data = JSON.parse(e.data);
 
     if (data.type === 'new_message') {
-        // Отмечаем диалог как непрочитанный
         window.UNREAD_CHATS[data.dialog_id] = (window.UNREAD_CHATS[data.dialog_id] || 0) + 1;
-
         localStorage.setItem('UNREAD_CHATS', JSON.stringify(window.UNREAD_CHATS));
         updateHeaderDot();
     }
 
     if (data.type === 'messages_read') {
-        // Сообщения прочитаны → удаляем метку
         delete window.UNREAD_CHATS[data.dialog_id];
         localStorage.setItem('UNREAD_CHATS', JSON.stringify(window.UNREAD_CHATS));
         updateHeaderDot();

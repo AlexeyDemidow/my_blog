@@ -16,9 +16,7 @@ $(document).on('click', '.modal-comment-like-btn', function(event) {
         },
         success: function(data) {
 
-            // обновляем количество лайков
             $('#modal-actual-comment-like-' + commentId).text(data.like_count);
-            // переключаем иконку
             const iconHtml = data.is_liked
                 ? '<i class="fa-solid fa-heart" style="color:red;"></i>'
                 : '<i class="fa-regular fa-heart"></i>';

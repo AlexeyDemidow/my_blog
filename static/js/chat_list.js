@@ -14,20 +14,14 @@ document.addEventListener('DOMContentLoaded', function() {
 
         const preview = chatItem.querySelector('.chat-preview');
 
-        /* =======================
-           ✔✔ ПРОЧИТАНО
-        ======================= */
         if (data.type === 'messages_read') {
 
-            // удаляем badge
             const badge = chatItem.querySelector('.unread-badge');
             if (badge) badge.remove();
 
-            // удаляем точку (dot)
             const dot = chatItem.querySelector('.online-dot');
             if (dot) dot.remove();
 
-            // меняем ✔ → ✔✔ в превью, если сообщение своё
             const status = preview.querySelector('.read-status');
             if (status) {
                 status.textContent = '✔✔';
@@ -35,9 +29,6 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
 
-        /* =======================
-           ✍️ TYPING
-        ======================= */
         if (data.type === 'chat_typing') {
             if (data.is_typing) {
                 preview.textContent = 'печатает…';
@@ -49,18 +40,13 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
 
-        /* =======================
-           ✉️ NEW MESSAGE
-        ======================= */
         if (data.type === 'new_message') {
 
             const dialogId = data.dialog_id;
 
-            // Найти диалог в списке
             let dialog = dialogs.find(d => d.id === dialogId);
 
             if (!dialog) {
-                // Если диалога нет (возможно он был скрыт), создаем его
                 dialog = {
                     id: dialogId,
                     messages: [],
@@ -69,25 +55,19 @@ document.addEventListener('DOMContentLoaded', function() {
                 dialogs.unshift(dialog); // вставляем в начало списка
             }
 
-            // Если пришёл флаг, что диалог был скрыт
             if (data.unhide) {
                 dialog.hidden = false;
-                // Можно обновить UI, показать диалог в списке
                 showDialogInUI(dialog);
             }
 
-            // Добавляем новое сообщение
             dialog.messages.push({
                 sender: data.sender,
                 text: data.message,
                 from_me: data.from_me
             });
 
-            // Обновляем UI
             renderMessages(dialogId);
 
-
-            // badge
             let badge = chatItem.querySelector('.unread-badge');
             if (!badge) {
                 badge = document.createElement('span');
@@ -98,13 +78,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 badge.textContent = parseInt(badge.textContent) + 1;
             }
 
-            // превью
             const text = `${data.sender}: ${data.message}`;
             preview.textContent = text;
             preview.dataset.lastMessage = text;
             preview.classList.remove('typing');
 
-            // поднимаем чат
             chatItem.parentNode.prepend(chatItem);
         }
 
@@ -147,7 +125,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const dialogId = chatItem.dataset.dialogId;
 
             const choice = confirm(
-                'ОК — удалить у всех\nОтмена — удалить только у себя'
+                'Удалить у всех\nУдалить только у себя'
             );
 
             socket.send(JSON.stringify({
@@ -160,7 +138,6 @@ document.addEventListener('DOMContentLoaded', function() {
     function showDialogInUI(dialog) {
         const chatList = document.querySelector('.chat-list');
 
-        // Если уже есть элемент в DOM, ничего не делаем
         if (document.querySelector(`.chat-item[data-dialog-id="${dialog.id}"]`)) return;
 
         const chatItem = document.createElement('div');
@@ -171,10 +148,6 @@ document.addEventListener('DOMContentLoaded', function() {
             <div class="chat-preview">${dialog.messages[0]?.text || ''}</div>
         `;
 
-        // Вставляем в начало списка
         chatList.prepend(chatItem);
-}
-
-
+    }
 });
-

@@ -31,7 +31,6 @@ document.addEventListener("DOMContentLoaded", () => {
         input.addEventListener("change", () => {
             updatePreview();
 
-            // Показать следующее поле, если текущее заполнено
             const nextForm = forms[index + 1];
             if (input.files.length > 0 && nextForm) {
                 nextForm.style.display = "block";
@@ -39,16 +38,13 @@ document.addEventListener("DOMContentLoaded", () => {
         });
 
         removeBtn.addEventListener("click", () => {
-            // очищаем поле и скрываем превью
             input.value = "";
             updatePreview();
 
-            // скрываем полностью контейнер поля
             form.style.display = "none";
 
         });
 
-        // Инициализация при загрузке страницы
         updatePreview();
     });
 

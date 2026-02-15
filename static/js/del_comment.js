@@ -10,7 +10,6 @@ $(document).on('click', '.modal-del-comment-btn', function(event) {
         data: { 'csrfmiddlewaretoken': csrf },
         success: function(data) {
             if (data.status === 'success') {
-                // Удаляем комментарий без перезагрузки
                 $(`#comment-${commentId}`).remove();
                 $(`#modal-comment-${commentId}`).remove();
 

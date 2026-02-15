@@ -2,8 +2,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const csrf = document.querySelector("[name=csrfmiddlewaretoken]").value;
     const newForms = document.querySelectorAll(".image-form");
 
-
-    // ---------- Добавление нового поля ----------
     document.getElementById("add-photo").addEventListener("click", () => {
         for (let form of newForms) {
             if (form.style.display === "none") {
@@ -14,7 +12,6 @@ document.addEventListener("DOMContentLoaded", () => {
         alert("Все поля уже добавлены");
     });
 
-    // ---------- Превью и удаление новых изображений ----------
     newForms.forEach(form => {
         const input = form.querySelector("input[type='file']");
         const preview = form.querySelector(".preview-new");

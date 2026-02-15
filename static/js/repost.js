@@ -1,8 +1,6 @@
-// Открытие модалки репоста
 $(document).on('click', '.repost-btn', function () {
     const postId = $(this).data('post-id');
 
-    // Загружаем данные поста
     $.ajax({
         url: `/posts/get_data_for_repost/${postId}/`,
         type: 'GET',
@@ -29,14 +27,12 @@ $(document).on('click', '.repost-btn', function () {
     });
 });
 
-// Закрытие модалки
 $(document).on('click', '.repost-close', function() {
     $("#repostModal").fadeOut(150);
     $("#repost-original").html('');
     $("#repost-text").val('');
 });
 
-// Отправка репоста
 $(document).on('click', '#send-repost-btn', function () {
     const postId = $(this).data("post-id");
     const text = $("#repost-text").val();
@@ -115,17 +111,11 @@ $(document).on('click', '#send-repost-btn', function () {
                     </div>
                 `;
 
-            // Добавляем новый репост в начало
             $("#posts-container").prepend(newPost);
         }
-
     });
-
 });
 
-
-
-// Получение cookie CSRF
 function getCookie(name) {
     const value = `; ${document.cookie}`;
     const parts = value.split(`; ${name}=`);

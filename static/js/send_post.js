@@ -1,7 +1,6 @@
 $(document).on('click', '.sendPost-btn', function () {
     const postId = $(this).data('post-id');
 
-    // Загружаем данные поста
     $.ajax({
         url: `/posts/get_data_for_repost/${postId}/`,
         type: 'GET',
@@ -60,15 +59,12 @@ $(document).on('click', '#sendPost-confirm-btn', function () {
     });
 });
 
-
-// Закрытие модалки
 $(document).on('click', '.sendPost-close', function() {
     $("#sendPostModal").fadeOut(150);
     $("#sendPost-original").html('');
     $("#sendPost-text").val('');
 });
 
-// Получение cookie CSRF
 function getCookie(name) {
     const value = `; ${document.cookie}`;
     const parts = value.split(`; ${name}=`);

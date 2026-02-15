@@ -12,16 +12,13 @@ $(document).on('click', '.like-btn, .modal-like-btn', function (event) {
             'csrfmiddlewaretoken': getCookie('csrftoken')
         },
         success: function(data) {
-            // обновляем количество лайков
             $('#like-actual-' + postId).html(data.like_count);
             $('#modal-like-count').html(data.like_count);
 
-            // переключаем иконку
             const iconHtml = data.is_liked
                 ? '<i class="fa-solid fa-heart" style="color:red;"></i>'
                 : '<i class="fa-regular fa-heart"></i>';
 
-            // 🔥 Обновляем ВСЕ кнопки лайка этого поста (и модальные, и обычные)
             $(`.like-btn[data-post-id="${postId}"]`).html(iconHtml);
             $(`.modal-like-btn[data-post-id="${postId}"]`).html(iconHtml);
         },

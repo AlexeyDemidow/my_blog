@@ -53,7 +53,6 @@ function saveEditedMessage(socket, messageId) {
 document.addEventListener('click', function (e) {
     const btn = e.target.closest('.options-btn');
 
-    // Закрываем все меню
     document.querySelectorAll('.message-options-menu')
         .forEach(menu => menu.classList.remove('active'));
 

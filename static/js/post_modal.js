@@ -1,6 +1,5 @@
 document.addEventListener("click", function(e) {
 
-    // Клик по посту → открыть модалку
     let block = e.target.closest(".open-post");
     if (block) {
         let postId = block.dataset.postId;
@@ -14,7 +13,6 @@ document.addEventListener("click", function(e) {
             });
     }
 
-    // закрытие окна
     if (e.target.classList.contains("post-modal-close")) {
         document.getElementById("post-modal").style.display = "none";
     }
@@ -30,7 +28,6 @@ document.addEventListener("change", function (e) {
         fetch(`/posts/post_detail/${postId}/?comms_sort=${comms_sort}`)
             .then(res => res.text())
             .then(html => {
-                // Берём только комментарии
                 let parser = new DOMParser();
                 let doc = parser.parseFromString(html, "text/html");
                 let newComments = doc.querySelector(".comments");

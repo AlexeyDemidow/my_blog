@@ -13,7 +13,6 @@ $(document).on('click', '.del-message-btn', function(event) {
         data: { 'csrfmiddlewaretoken': csrf },
         success: function(data) {
             if (data.status === 'success') {
-                // Удаляем комментарий без перезагрузки
                 btn.closest('.message').remove();
 
             } else {
@@ -37,7 +36,6 @@ $(document).on('click', '.del-message-btn', function(event) {
 document.addEventListener('click', function (e) {
     const btn = e.target.closest('.options-btn');
 
-    // Закрываем все меню
     document.querySelectorAll('.message-options-menu')
         .forEach(menu => menu.classList.remove('active'));
 
