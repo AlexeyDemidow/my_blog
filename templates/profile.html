@@ -5,18 +5,15 @@
 
 {% block content %}
     <span class="online-dot" data-user-id="{{ c_user.id }}"></span>
-    <!-- Информация о пользователе -->
     <div class="form">
-
         <div class="user-status" data-user-id="{{ c_user.id }}">
-
             <span class="status-text">
-            {% if c_user.id in online_users %}
-                онлайн
-            {% else %}
-                был(а) {{ c_user.last_seen|timesince }} назад
-            {% endif %}
-        </span>
+                {% if c_user.id in online_users %}
+                    онлайн
+                {% else %}
+                    был(а) {{ c_user.last_seen|timesince }} назад
+                {% endif %}
+            </span>
         </div>
 
         <p><img src="{{ c_user.avatar.url }}" alt="Аватар" class="round"></p>
@@ -46,16 +43,15 @@
     {% else %}
         <a href="{% url 'start_dialog' c_user.id %}" class="nav-btn">Написать</a>
     {% endif %}
-    <!-- ЛЕНТА -->
-<form method="get" class="sort-container" style="margin-bottom:15px;">
-    <select name="sort" id="sort-selector">
-        <option value="date-new" {% if request.GET.sort == 'date-new' or not request.GET.sort %}selected{% endif %}>По дате (сначала новые)</option>
-        <option value="date-old" {% if request.GET.sort == 'date-old' %}selected{% endif %}>По дате (сначала старые)</option>
-        <option value="likes" {% if request.GET.sort == 'likes' %}selected{% endif %}>По лайкам</option>
-        <option value="reposts" {% if request.GET.sort == 'reposts' %}selected{% endif %}>По репостам</option>
-        <option value="comments" {% if request.GET.sort == 'comments' %}selected{% endif %}>По комментариям</option>
-    </select>
-</form>
+    <form method="get" class="sort-container" style="margin-bottom:15px;">
+        <select name="sort" id="sort-selector">
+            <option value="date-new" {% if request.GET.sort == 'date-new' or not request.GET.sort %}selected{% endif %}>По дате (сначала новые)</option>
+            <option value="date-old" {% if request.GET.sort == 'date-old' %}selected{% endif %}>По дате (сначала старые)</option>
+            <option value="likes" {% if request.GET.sort == 'likes' %}selected{% endif %}>По лайкам</option>
+            <option value="reposts" {% if request.GET.sort == 'reposts' %}selected{% endif %}>По репостам</option>
+            <option value="comments" {% if request.GET.sort == 'comments' %}selected{% endif %}>По комментариям</option>
+        </select>
+    </form>
     <div id="posts-container" data-user-id="{{ c_user.id }}">
         {% include "partials/post_items.html" %}
     </div>

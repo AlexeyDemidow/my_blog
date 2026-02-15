@@ -9,18 +9,8 @@
         <div class="form">
             <form class="login-form" method="post" action="{% url 'account_login' %}">
                 {% csrf_token %}
-                <input
-                    type="text"
-                    name="{{ form.login.name }}"
-                    placeholder="Email"
-                    value="{{ form.login.value|default_if_none:'' }}"
-                >
-
-                <input
-                    type="password"
-                    name="{{ form.password.name }}"
-                    placeholder="Пароль"
-                >
+                <input type="text" name="{{ form.login.name }}" placeholder="Email" value="{{ form.login.value|default_if_none:'' }}">
+                <input type="password" name="{{ form.password.name }}" placeholder="Пароль">
                 {% if form.errors %}
                     <div class="alert alert-danger with-close alert-dismissible fade show">
                         Имя пользователя или пароль введены неверно
@@ -35,6 +25,6 @@
                 </button>
                 <p class="message"><a href="{% url 'password_reset' %}">Забыли пароль?</a></p>
             </form>
-        <div/>
+        </div>
     </div>
 {% endblock %}

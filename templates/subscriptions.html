@@ -3,30 +3,30 @@
 {% block title %}Подписки{% endblock %}
 
 {% block content %}
-<div class="w-100 text-center">
-    <form autocomplete="off" id="search-form">
-        {% csrf_token %}
-         <input id="subscriptions-search-input" class="p-3 w-50 search" placeholder="Найти пользователя">
-    </form>
-</div>
-
-<div class="chat-list">
-    <div id="subscriptions-result-box">
-        {% for item in subscriptions %}
-            <div class="catalog">
-                <div class="food_container">
-                    <a href="{% url 'profile' item.following.id %}">
-                        <p> <img src="{{ item.following.avatar.url }}" style="width: 60px"> </p>
-                        <p>{{ item.following.username }}</p>
-                    </a>
-                </div>
-            </div>
-        {% empty %}
-            <p>Вы ни на кого не подписаны</p>
-        {% endfor %}
+    <div class="w-100 text-center">
+        <form autocomplete="off" id="search-form">
+            {% csrf_token %}
+             <input id="subscriptions-search-input" class="p-3 w-50 search" placeholder="Найти пользователя">
+        </form>
     </div>
-</div>
-<script>
-    window.CSRF_TOKEN = "{{ csrf_token }}";
-</script>
+
+    <div class="chat-list">
+        <div id="subscriptions-result-box">
+            {% for item in subscriptions %}
+                <div class="catalog">
+                    <div class="food_container">
+                        <a href="{% url 'profile' item.following.id %}">
+                            <p> <img src="{{ item.following.avatar.url }}" style="width: 60px"> </p>
+                            <p>{{ item.following.username }}</p>
+                        </a>
+                    </div>
+                </div>
+            {% empty %}
+                <p>Вы ни на кого не подписаны</p>
+            {% endfor %}
+        </div>
+    </div>
+    <script>
+        window.CSRF_TOKEN = "{{ csrf_token }}";
+    </script>
 {% endblock %}

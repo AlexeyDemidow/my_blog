@@ -3,22 +3,22 @@
 {% block title %}Чаты{% endblock %}
 
 {% block content %}
-<div class="w-100 text-center">
-    <form autocomplete="off" id="search-form">
-        {% csrf_token %}
-         <input id="search-input" class="p-3 w-50 search" placeholder="Найти пользователя">
-    </form>
-</div>
-<div class="chat-list">
-    <div id="result-box">
-            <div class="catalog">
-                <div class="food_container">
-                    <b>Ничего не найдено</b>
-                </div>
-            </div>
+    <div class="w-100 text-center">
+        <form autocomplete="off" id="search-form">
+            {% csrf_token %}
+             <input id="search-input" class="p-3 w-50 search" placeholder="Найти пользователя">
+        </form>
     </div>
-</div>
-<script>
-    window.CSRF_TOKEN = "{{ csrf_token }}";
-</script>
+    <div class="chat-list">
+        <div id="result-box">
+                <div class="catalog">
+                    <div class="food_container">
+                        <b>Ничего не найдено</b>
+                    </div>
+                </div>
+        </div>
+    </div>
+    <script>
+        window.CSRF_TOKEN = "{{ csrf_token }}";
+    </script>
 {% endblock %}
