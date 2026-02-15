@@ -1,22 +1,15 @@
 from django.contrib import admin
 
-from django.contrib import admin
 from .models import Post, PostImage, PostLike, Comment, CommentLike
 
 
-# -----------------------------
-#   Inline для изображений
-# -----------------------------
 class PostImageInline(admin.TabularInline):
     model = PostImage
-    extra = 1  # количество пустых полей по умолчанию
+    extra = 1
     fields = ('image',)
     readonly_fields = ('uploaded_at',)
 
 
-# -----------------------------
-#   Inline для комментариев
-# -----------------------------
 class CommentInline(admin.TabularInline):
     model = Comment
     extra = 1
@@ -24,9 +17,6 @@ class CommentInline(admin.TabularInline):
     readonly_fields = ('created_at',)
 
 
-# -----------------------------
-#   Post Admin
-# -----------------------------
 @admin.register(Post)
 class PostAdmin(admin.ModelAdmin):
     list_display = ('id', 'author', 'short_content', 'created_at', 'likes_count', 'comments_count')
@@ -48,9 +38,6 @@ class PostAdmin(admin.ModelAdmin):
     comments_count.short_description = "Comments"
 
 
-# -----------------------------
-#   Likes в админке
-# -----------------------------
 @admin.register(PostLike)
 class LikeAdmin(admin.ModelAdmin):
     list_display = ('id', 'post', 'user', 'created_at')
@@ -65,9 +52,6 @@ class LikeAdmin(admin.ModelAdmin):
     search_fields = ('user__username', 'comment__text')
 
 
-# -----------------------------
-#   PostImage отдельно (если нужно)
-# -----------------------------
 @admin.register(PostImage)
 class PostImageAdmin(admin.ModelAdmin):
     list_display = ('id', 'post', 'image', 'uploaded_at')
@@ -75,12 +59,8 @@ class PostImageAdmin(admin.ModelAdmin):
     search_fields = ('post__content',)
 
 
-# -----------------------------
-#   Комментарии отдельно
-# -----------------------------
 @admin.register(Comment)
 class CommentAdmin(admin.ModelAdmin):
     list_display = ('id', 'post', 'user', 'text', 'created_at')
     list_filter = ('created_at', 'user')
     search_fields = ('text', 'user__username', 'post__content')
-
