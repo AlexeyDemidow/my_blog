@@ -16,7 +16,6 @@ from users.models import CustomUser, UserFollow
 
 
 class SignUpView(CreateView):
-    """Представление регистрации пользователя"""
 
     model = CustomUser
     form_class = CustomUserCreationForm
@@ -28,14 +27,7 @@ class SignUpView(CreateView):
         return super().form_valid(form)
 
 
-class SignUpSuccess(TemplateView):
-    """Представление успешной регистрации пользователя"""
-
-    template_name = 'registration/signup_success.html'
-
-
 class Login(LoginView):
-    """Представление входа в систему"""
 
     form_class = AuthenticationForm
     template_name = 'account/login.html'
