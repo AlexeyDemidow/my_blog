@@ -1,4 +1,5 @@
 from django.contrib import admin
+
 from .models import Dialog, Message, DialogUser
 
 
@@ -39,5 +40,3 @@ class DialogAdmin(admin.ModelAdmin):
         )
 
     users_list.short_description = 'Участники'
-
-
