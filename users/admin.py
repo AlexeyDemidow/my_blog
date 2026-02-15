@@ -1,9 +1,9 @@
 from django.contrib import admin
-from django.contrib.auth.admin import UserAdmin
 from django.db.models import Count
 from django.utils.html import mark_safe
-from .models import CustomUser, UserFollow
 from django.utils.translation import gettext_lazy as _
+
+from .models import CustomUser, UserFollow
 
 
 @admin.register(UserFollow)
@@ -20,13 +20,6 @@ class UserFollowAdmin(admin.ModelAdmin):
         'following',
     )
 
-    search_fields = (
-        'follower__username',
-        'follower__email',
-        'following__username',
-        'following__email',
-    )
-
     list_filter = (
         'created_at',
     )
@@ -38,11 +31,6 @@ class UserFollowAdmin(admin.ModelAdmin):
     readonly_fields = (
         'created_at',
     )
-
-    # autocomplete_fields = (
-    #     'follower',
-    #     'following',
-    # )
 
     def save_model(self, request, obj, form, change):
         obj.full_clean()
