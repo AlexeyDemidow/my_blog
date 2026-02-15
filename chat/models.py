@@ -11,7 +11,6 @@ class Dialog(models.Model):
         related_name='dialogs'
     )
     created_at = models.DateTimeField(auto_now_add=True)
-
     is_pinned = models.BooleanField(default=False)
     pinned_at = models.DateTimeField(null=True, blank=True)
 
@@ -33,7 +32,6 @@ class DialogUser(models.Model):
         CustomUser,
         on_delete=models.CASCADE
     )
-
     is_hidden = models.BooleanField(default=False)
     hidden_at = models.DateTimeField(null=True, blank=True)
 
@@ -48,7 +46,6 @@ class Message(models.Model):
     text = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
     is_read = models.BooleanField(default=False)
-
     is_pinned = models.BooleanField(default=False)
     pinned_at = models.DateTimeField(null=True, blank=True)
 
