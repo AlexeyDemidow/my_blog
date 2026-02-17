@@ -1,0 +1,113 @@
+services:
+  my_blog:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: my_blog:latest
+    container_name: 'my_blog'
+    restart: always
+    env_file:
+      - ./.env
+    environment:
+      SECRET_KEY: ${SECRET_KEY}
+      CELERY_BROKER_URL: redis://redis:6379/0
+      CELERY_RESULT_BACKEND: redis://redis:6379/0
+    command: uvicorn my_blog.asgi:application --host 0.0.0.0 --port 8000
+    depends_on:
+      - db
+      - migrate
+      - redis
+
+  migrate:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command:  sh -c "python manage.py makemigrations && python manage.py migrate"
+    depends_on:
+      - db
+    env_file:
+      - ./.env
+    restart: "no"
+
+  init_db:
+    build: .
+    command: python db_fill_script.py
+    depends_on:
+      - db
+    env_file:
+      - ./.env
+
+  nginx:
+    container_name: nginx
+    working_dir: /my_blog
+    image: nginx:stable-alpine
+    restart: always
+    ports:
+      - "80:80"
+    volumes:
+      - ./docker/nginx/:/etc/nginx/conf.d:ro
+    depends_on:
+      - my_blog
+
+  db:
+    image: postgres:15
+    container_name: postgres_db
+    restart: always
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./postgres_data:/var/lib/postgresql/data
+
+  redis:
+    container_name: redis
+    image: redis:alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    restart: always
+
+  celery_worker:
+    container_name: celery_worker
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: my_blog_worker:latest
+    restart: always
+    env_file:
+      - ./.env
+    environment:
+      SECRET_KEY: ${SECRET_KEY}
+      CELERY_BROKER_URL: redis://redis:6379/0
+      CELERY_RESULT_BACKEND: redis://redis:6379/0
+    command: celery -A my_blog worker --loglevel=info -P eventlet
+    depends_on:
+      - redis
+    volumes:
+      - .:/my_blog
+
+  celery_beat:
+    container_name: celery_beat
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: my_blog_beat:latest
+    restart: always
+    env_file:
+      - ./.env
+    environment:
+      SECRET_KEY: ${SECRET_KEY}
+      CELERY_BROKER_URL: redis://redis:6379/0
+      CELERY_RESULT_BACKEND: redis://redis:6379/0
+    command: celery -A my_blog beat -l info
+    depends_on:
+      - redis
+    volumes:
+      - .:/my_blog
+
+volumes:
+  redis_data:
