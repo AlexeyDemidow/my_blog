@@ -1,16 +1,21 @@
 FROM python:3.14
 
-SHELL ["/bin/bash", "-c"]
-
-ENV PYTHONDONTWRITEBYTECODE 1
-ENV PYTHONBUFFERED 1
-
-RUN pip install --upgrade pip
-
 WORKDIR /my_blog
+
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+
+RUN apt-get update && \
+    apt-get install -y netcat-openbsd && \
+    pip install --upgrade pip
+
+COPY requirements.txt .
+RUN pip install -r requirements.txt
 
 COPY . .
 
-RUN pip install -r requirements.txt
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
 
-CMD ["uvicorn", "my_blog.asgi:application", "--host 0.0.0.0", "--port 8000"]
+ENTRYPOINT ["/entrypoint.sh"]
+CMD ["uvicorn", "my_blog.asgi:application", "--host", "0.0.0.0", "--port", "8000"]
