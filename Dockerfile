@@ -18,4 +18,4 @@ COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
 ENTRYPOINT ["/entrypoint.sh"]
-CMD ["uvicorn", "my_blog.asgi:application", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["daphne", "-b", "0.0.0.0", "-p", "8000", "my_blog.asgi:application"]
