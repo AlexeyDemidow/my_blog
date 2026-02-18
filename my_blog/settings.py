@@ -9,9 +9,9 @@ environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
 
 SECRET_KEY = env('SECRET_KEY')
 
-DEBUG = False
+DEBUG = env.bool("DEBUG", default=False)
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'my_blog']
+ALLOWED_HOSTS = env.list("ALLOWED_HOSTS", default=["localhost"])
 
 INSTALLED_APPS = [
     'daphne',
