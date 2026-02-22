@@ -71,9 +71,10 @@ services:
       SECRET_KEY: ${SECRET_KEY}
       CELERY_BROKER_URL: redis://redis:6379/0
       CELERY_RESULT_BACKEND: redis://redis:6379/0
-    command: celery -A my_blog worker --loglevel=info -P eventlet
+    command: celery -A my_blog worker --loglevel=info
     depends_on:
       - redis
+      - db
 
   celery_beat:
     container_name: celery_beat
@@ -91,6 +92,7 @@ services:
     command: celery -A my_blog beat -l info
     depends_on:
       - redis
+      - db
 
 volumes:
   static_volume:
