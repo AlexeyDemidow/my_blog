@@ -14,6 +14,7 @@ services:
       CELERY_RESULT_BACKEND: redis://redis:6379/0
       RUN_MIGRATIONS: 1
       INIT_DB: 1
+      CREATE_SUPERUSER: 1
     depends_on:
       - db
       - redis
